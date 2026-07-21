@@ -1,2 +1,3 @@
-# Kino-Movie-TV-Tracking
-Track. Discover. Remember.
+# Kino Movie & TV Tracking
+
+### Discover. Watch. Remember.
