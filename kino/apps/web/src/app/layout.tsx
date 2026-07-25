@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LanguageProvider } from "@/components/language-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans" });
@@ -46,6 +47,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <LanguageProvider>{children}</LanguageProvider>
           </Suspense>
+          <Toaster position="bottom-right" richColors />
         </ThemeProvider>
       </body>
     </html>

@@ -1,21 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check, Laptop, Moon, Sun } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Laptop, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 export function ThemeToggle() {
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { theme = "system", setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -23,49 +23,90 @@ export function ThemeToggle() {
     setMounted(true);
   }, []);
 
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return (
-      <div
-        className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
-        aria-hidden="true"
-      >
-        <Laptop className="size-4" />
-      </div>
+  const getTriggerIcon = () => {
+    if (!mounted) return <Laptop className="size-4" />;
+
+    if (theme === "system") {
+      return resolvedTheme === "dark" ? (
+        <Moon className="size-4" />
+      ) : (
+        <Sun className="size-4" />
+      );
+    }
+
+    return theme === "dark" ? (
+      <Moon className="size-4" />
+    ) : (
+      <Sun className="size-4" />
     );
-  }
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
-        aria-label="Select theme"
-      >
-        {resolvedTheme === "dark" ? (
-          <Moon className="size-4" />
-        ) : (
-          <Sun className="size-4" />
-        )}
-      </DropdownMenuTrigger>
+        render={
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Change theme"
+            disabled={!mounted} // To avoid hydration mismatch
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={
+                  mounted
+                    ? theme === "system"
+                      ? resolvedTheme || "system"
+                      : theme
+                    : "loading"
+                }
+                className="flex items-center justify-center"
+                initial={{ opacity: 0, rotate: -10 }}
+                animate={{ opacity: 1, rotate: 0 }}
+                exit={{ opacity: 0, rotate: 10 }}
+                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {getTriggerIcon()}
+              </motion.div>
+            </AnimatePresence>
+          </Button>
+        }
+      />
 
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          <Laptop className="mr-2 size-4" />
-          System
-          {theme === "system" && <Check className="ml-auto size-4" />}
-        </DropdownMenuItem>
+        <AnimatePresence mode="wait">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <DropdownMenuRadioGroup
+              value={theme}
+              onValueChange={(value) => {
+                // Small delay so dropdown closes smoothly
+                setTimeout(() => {
+                  setTheme(value as "light" | "dark" | "system");
+                }, 80);
+              }}
+            >
+              <DropdownMenuRadioItem value="system">
+                <Laptop className="size-4" />
+                System
+              </DropdownMenuRadioItem>
 
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="mr-2 size-4" />
-          Light
-          {theme === "light" && <Check className="ml-auto size-4" />}
-        </DropdownMenuItem>
+              <DropdownMenuRadioItem value="light">
+                <Sun className="size-4" />
+                Light
+              </DropdownMenuRadioItem>
 
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="mr-2 size-4" />
-          Dark
-          {theme === "dark" && <Check className="ml-auto size-4" />}
-        </DropdownMenuItem>
+              <DropdownMenuRadioItem value="dark">
+                <Moon className="size-4" />
+                Dark
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </motion.div>
+        </AnimatePresence>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -8,8 +8,8 @@ export const translations = {
     },
     home: {
       title: "Kino",
-      subtitle: "Doesn't look like anything to me.",
-      description: "First commit • The beginning of something great",
+      subtitle: "Every story worth watching, in one place.",
+      description: "Track what you watch. Discover what's next.",
     },
   },
 
@@ -22,8 +22,8 @@ export const translations = {
     },
     home: {
       title: "Kino",
-      subtitle: "Sieht für mich nach nichts aus.",
-      description: "Erster Commit • Der Anfang von etwas Großartigem",
+      subtitle: "Jede Geschichte, die man sehen sollte, an einem Ort.",
+      description: "Behalte den Überblick. Entdecke, was als Nächstes kommt.",
     },
   },
 
@@ -36,8 +36,8 @@ export const translations = {
     },
     home: {
       title: "Kino",
-      subtitle: "Ça ne ressemble à rien pour moi.",
-      description: "Premier commit • Le début de quelque chose de grand",
+      subtitle: "Toutes les histoires qui valent la peine, au même endroit.",
+      description: "Suivez ce que vous regardez. Découvrez la suite.",
     },
   },
 
@@ -50,8 +50,8 @@ export const translations = {
     },
     home: {
       title: "Kino",
-      subtitle: "No se parece a nada para mí.",
-      description: "Primer commit • El comienzo de algo grandioso",
+      subtitle: "Todas las historias que merecen verse, en un solo lugar.",
+      description: "Sigue lo que ves. Descubre qué viene después.",
     },
   },
 } as const;
