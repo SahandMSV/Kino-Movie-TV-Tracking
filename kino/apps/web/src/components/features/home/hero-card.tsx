@@ -11,15 +11,14 @@ type AuthMode = "login" | "signup";
 
 const viewConfigs = {
   home: { width: 475, height: 350 },
-  login: { width: 420, height: 460 },
-  signup: { width: 420, height: 490 },
+  login: { width: 420, height: 432 },
+  signup: { width: 420, height: 484 },
 } as const;
 
 export function HeroCard() {
   const [view, setView] = useState<View>("home");
   const [authMode, setAuthMode] = useState<AuthMode>("login");
 
-  // Physical slots are only "home" and "auth"
   const slidingView = view === "home" ? "home" : "auth";
 
   const authConfig =

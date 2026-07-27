@@ -118,12 +118,16 @@
 }
 
 @layer base {
-  * {
+  /* * {
     @apply border-border outline-ring/50;
-  }
+  } */
 }
 
 main {
   background-color: var(--background);
   transition: background-color 0.15s ease;
+}
+
+input[type="password"] {
+  -webkit-text-security: square; /* disc | circle | square */
 }

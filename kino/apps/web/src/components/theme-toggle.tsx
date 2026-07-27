@@ -45,12 +45,7 @@ export function ThemeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label="Change theme"
-            disabled={!mounted} // To avoid hydration mismatch
-          >
+          <Button variant="outline" size="icon" aria-label="Change theme">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={
@@ -84,7 +79,6 @@ export function ThemeToggle() {
             <DropdownMenuRadioGroup
               value={theme}
               onValueChange={(value) => {
-                // Small delay so dropdown closes smoothly
                 setTimeout(() => {
                   setTheme(value as "light" | "dark" | "system");
                 }, 80);

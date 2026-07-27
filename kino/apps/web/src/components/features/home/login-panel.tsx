@@ -1,7 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import { ChevronLeft, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 type LoginPanelProps = {
@@ -19,15 +24,14 @@ export function LoginPanel({ onBack }: LoginPanelProps) {
   return (
     <div className="relative flex h-full w-full flex-col">
       <div className="flex flex-1 flex-col items-center justify-center">
-        <button
-          onClick={onBack}
-          className="w-full left-0 top-0 z-10 -m-1 flex items-center gap-2 p-1 pb-8 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          aria-label="Go back"
-        >
-          <ArrowLeft className="size-4" />
-          <span>Back</span>
-        </button>
-        <div className="mb-10 space-y-3 text-center">
+        <div className="w-full">
+          <Button variant={"ghost"} onClick={onBack} aria-label="Go back">
+            <ChevronLeft className="size-4" data-icon="inline-start" />
+            Back
+          </Button>
+        </div>
+
+        <div className="mt-4 mb-8  space-y-3 text-center">
           <h2 className="text-4xl font-semibold tracking-tight">
             Welcome back
           </h2>
@@ -35,23 +39,32 @@ export function LoginPanel({ onBack }: LoginPanelProps) {
         </div>
 
         <div className="w-full max-w-xs space-y-5">
-          <input
-            type="email"
-            placeholder="Email address"
-            className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"
-          />
+          <InputGroup>
+            <InputGroupAddon>
+              <Mail className="size-4 text-muted-foreground" />
+            </InputGroupAddon>
+            <InputGroupInput type="email" placeholder="Email address" />
+          </InputGroup>
 
-          <Button className="w-full" size="lg" onClick={handleLogin}>
+          <InputGroup>
+            <InputGroupAddon>
+              <Lock className="size-4 text-muted-foreground" />
+            </InputGroupAddon>
+            <InputGroupInput type="password" placeholder="Password" />
+          </InputGroup>
+
+          <Button className={"w-full"} size="default" onClick={handleLogin}>
             Sign In
           </Button>
 
-          <div className="text-center text-xs text-muted-foreground">
-            Forgot password?
+          <div className="flex flex-1 items-center justify-center">
+            <Button variant={"link"} size={"sm"}>
+              Forgot password
+            </Button>
+            <span className="px-3"> • </span>
+            <Button variant={"link"} size={"sm"}>
+              Terms of service
+            </Button>
           </div>
         </div>
       </div>
