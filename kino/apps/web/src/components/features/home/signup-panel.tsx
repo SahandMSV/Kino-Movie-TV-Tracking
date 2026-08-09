@@ -1,25 +1,50 @@
 "use client";
 
+import { useActionState, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { ChevronLeft, Lock, User } from "lucide-react";
+import { ChevronLeft, Lock, Mail, User } from "lucide-react";
 import { toast } from "sonner";
+import { registerAction, type RegisterState } from "@/lib/actions/auth";
 
 type SignupPanelProps = {
   onBack: () => void;
 };
 
+const initialState: RegisterState = {};
+
 export function SignupPanel({ onBack }: SignupPanelProps) {
-  const handleSignup = () => {
-    // Fake success
-    toast.success("Account created successfully", {
-      description: "Welcome to Kino!",
-    });
-  };
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [state, formAction, isPending] = useActionState(
+    registerAction,
+    initialState,
+  );
+
+  useEffect(() => {
+    if (state.success) {
+      toast.success("Account created successfully", {
+        description: "Welcome to Kino!",
+      });
+      setEmail("");
+      setUsername("");
+      setPassword("");
+      setConfirmPassword("");
+      onBack();
+    } else if (state.error) {
+      toast.error(state.error);
+    } else if (state.fieldErrors) {
+      const firstError = Object.values(state.fieldErrors).flat()[0];
+      if (firstError) toast.error(firstError);
+    }
+  }, [state, onBack]);
 
   return (
     <div className="relative flex h-full w-full flex-col">
@@ -38,14 +63,36 @@ export function SignupPanel({ onBack }: SignupPanelProps) {
           <p className="text-muted-foreground">Join Kino today</p>
         </div>
 
-        <div className="w-full max-w-xs space-y-5">
+        <form action={formAction} className="w-full max-w-xs space-y-5">
+          <InputGroup>
+            <InputGroupAddon>
+              <Mail className="size-4 text-muted-foreground" />
+            </InputGroupAddon>
+            <InputGroupInput
+              name="email"
+              type="email"
+              placeholder="Email address"
+              required
+              autoComplete="email"
+              disabled={isPending}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </InputGroup>
+
           <InputGroup>
             <InputGroupAddon>
               <User className="size-4 text-muted-foreground" />
             </InputGroupAddon>
             <InputGroupInput
-              type="email"
-              placeholder="Email address / Username"
+              name="username"
+              type="text"
+              placeholder="Username"
+              required
+              autoComplete="username"
+              disabled={isPending}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </InputGroup>
 
@@ -53,30 +100,53 @@ export function SignupPanel({ onBack }: SignupPanelProps) {
             <InputGroupAddon>
               <Lock className="size-4 text-muted-foreground" />
             </InputGroupAddon>
-            <InputGroupInput type="password" placeholder="Password" />
+            <InputGroupInput
+              name="password"
+              type="password"
+              placeholder="Password"
+              required
+              autoComplete="new-password"
+              disabled={isPending}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </InputGroup>
 
           <InputGroup>
             <InputGroupAddon>
               <Lock className="size-4 text-muted-foreground" />
             </InputGroupAddon>
-            <InputGroupInput type="password" placeholder="Confirm Password" />
+            <InputGroupInput
+              name="confirmPassword"
+              type="password"
+              placeholder="Confirm Password"
+              required
+              autoComplete="new-password"
+              disabled={isPending}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
           </InputGroup>
 
-          <Button className="w-full" size="default" onClick={handleSignup}>
-            Create Account
+          <Button
+            type="submit"
+            className="w-full"
+            size="default"
+            disabled={isPending}
+          >
+            {isPending ? "Creating account…" : "Create Account"}
           </Button>
 
           <div className="flex flex-1 items-center justify-center">
-            <Button variant={"link"} size={"sm"}>
+            <Button variant="link" size="sm" type="button">
               Guest Mode
             </Button>
             <span className="px-3"> • </span>
-            <Button variant={"link"} size={"sm"}>
+            <Button variant="link" size="sm" type="button">
               Terms of service
             </Button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
