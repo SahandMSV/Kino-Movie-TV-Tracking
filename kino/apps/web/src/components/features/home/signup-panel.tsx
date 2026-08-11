@@ -1,6 +1,8 @@
+// src/components/features/home/signup-panel.tsx
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   InputGroup,
@@ -18,6 +20,7 @@ type SignupPanelProps = {
 const initialState: RegisterState = {};
 
 export function SignupPanel({ onBack }: SignupPanelProps) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -37,14 +40,15 @@ export function SignupPanel({ onBack }: SignupPanelProps) {
       setUsername("");
       setPassword("");
       setConfirmPassword("");
-      onBack();
+      router.push("/");          // ← go to root
+      router.refresh();
     } else if (state.error) {
       toast.error(state.error);
     } else if (state.fieldErrors) {
       const firstError = Object.values(state.fieldErrors).flat()[0];
       if (firstError) toast.error(firstError);
     }
-  }, [state, onBack]);
+  }, [state, router]);
 
   return (
     <div className="relative flex h-full w-full flex-col">

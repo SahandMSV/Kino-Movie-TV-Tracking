@@ -1,6 +1,8 @@
+// src/components/features/home/login-panel.tsx
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   InputGroup,
@@ -18,6 +20,7 @@ type LoginPanelProps = {
 const initialState: LoginState = {};
 
 export function LoginPanel({ onBack }: LoginPanelProps) {
+  const router = useRouter();
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -33,11 +36,12 @@ export function LoginPanel({ onBack }: LoginPanelProps) {
       });
       setEmailOrUsername("");
       setPassword("");
-      onBack();
+      router.push("/");          // ← go to root with updated navbar
+      router.refresh();
     } else if (state.error) {
       toast.error(state.error);
     }
-  }, [state, onBack]);
+  }, [state, router]);
 
   return (
     <div className="relative flex h-full w-full flex-col">
