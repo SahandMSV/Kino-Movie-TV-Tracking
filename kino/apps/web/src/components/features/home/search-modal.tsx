@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { searchAction } from "@/lib/actions/search";
 import { posterUrl } from "@/lib/tmdb/config";
 import type { TmdbMultiSearchResult } from "@/lib/tmdb/schemas";
-import { cn } from "@/lib/utils";
 
 type SearchModalProps = {
   open: boolean;
@@ -16,6 +16,7 @@ type SearchModalProps = {
 };
 
 export function SearchModal({ open, onOpenChange }: SearchModalProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<TmdbMultiSearchResult[]>([]);
   const [isPending, startTransition] = useTransition();
@@ -23,7 +24,6 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
 
   useEffect(() => {
     if (open) {
-      // small delay so the dialog is mounted before focusing
       const t = setTimeout(() => inputRef.current?.focus(), 50);
       return () => clearTimeout(t);
     } else {
@@ -57,11 +57,21 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
     });
   };
 
+  const handleSelect = (item: TmdbMultiSearchResult) => {
+    onOpenChange(false);
+
+    if (item.media_type === "movie") {
+      router.push(`/movie/${item.id}`);
+    } else if (item.media_type === "tv") {
+      router.push(`/tv/${item.id}`);
+    }
+    // people intentionally skipped for now
+  };
+
   return (
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -71,7 +81,6 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
             onClick={() => onOpenChange(false)}
           />
 
-          {/* Panel */}
           <motion.div
             role="dialog"
             aria-modal="true"
@@ -83,7 +92,6 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
             className="fixed left-1/2 top-[12%] z-50 w-full max-w-xl -translate-x-1/2 px-4"
           >
             <div className="overflow-hidden rounded-xl border border-border bg-popover shadow-2xl">
-              {/* Search input row */}
               <div className="flex items-center gap-2 border-b border-border px-3">
                 <Search className="size-4 shrink-0 text-muted-foreground" />
                 <Input
@@ -91,7 +99,7 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
                   value={query}
                   onChange={(e) => handleSearch(e.target.value)}
                   placeholder="Search movies, shows, people…"
-                  className="h-12 border-0 bg-white px-0 text-base shadow-none focus-visible:ring-0"
+                  className="h-12 border-0 bg-transparent px-0 text-base shadow-none focus-visible:ring-0"
                   autoComplete="off"
                 />
                 <Button
@@ -105,7 +113,6 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
                 </Button>
               </div>
 
-              {/* Results */}
               <div className="max-h-[60vh] overflow-y-auto">
                 {isPending && (
                   <p className="px-4 py-6 text-center text-sm text-muted-foreground">
@@ -146,10 +153,7 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
                           <button
                             type="button"
                             className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted/60"
-                            onClick={() => {
-                              // TODO: navigate to media detail page
-                              onOpenChange(false);
-                            }}
+                            onClick={() => handleSelect(item)}
                           >
                             <div className="relative size-10 shrink-0 overflow-hidden rounded-md bg-muted">
                               {image ? (

@@ -1,4 +1,3 @@
-// src/components/features/home/signup-panel.tsx
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
