@@ -37,18 +37,18 @@ export function AppNavbar({ user }: AppNavbarProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-        <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+      <header className='sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl'>
+        <nav className='mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6'>
           {/* Brand */}
           <Link
-            href="/"
-            className="text-lg font-semibold tracking-tight transition-opacity hover:opacity-80"
+            href='/'
+            className='text-lg font-semibold tracking-tight transition-opacity hover:opacity-80'
           >
             Kino
           </Link>
 
           {/* Right actions */}
-          <div className="flex items-center gap-1">
+          <div className='flex items-center gap-1'>
             {/* Theme + Language – always visible */}
             <ThemeToggle />
             <LanguageSwitcher />
@@ -57,48 +57,35 @@ export function AppNavbar({ user }: AppNavbarProps) {
               <>
                 {/* Search */}
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Search"
+                  variant='ghost'
+                  size='icon'
+                  aria-label='Search'
                   onClick={() => setSearchOpen(true)}
                 >
-                  <Search className="size-4" />
+                  <Search className='size-4' />
                 </Button>
 
                 {/* Notifications */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Notifications"
-                >
-                  <Bell className="size-4" />
+                <Button variant='ghost' size='icon' aria-label='Notifications'>
+                  <Bell className='size-4' />
                 </Button>
 
                 {/* Account name */}
-                <span className="mx-1 hidden text-sm text-muted-foreground sm:inline">
+                <span className='mx-1 hidden text-sm text-muted-foreground sm:inline'>
                   {displayName}
                 </span>
 
                 {/* Logout – icon only */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Sign out"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="size-4" />
+                <Button variant='ghost' size='icon' aria-label='Sign out' onClick={handleLogout}>
+                  <LogOut className='size-4' />
                 </Button>
               </>
             ) : (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push("/register")}
-                >
+                <Button variant='ghost' size='sm' onClick={() => router.push("/register")}>
                   Login
                 </Button>
-                <Button size="sm" onClick={() => router.push("/register")}>
+                <Button size='sm' onClick={() => router.push("/register")}>
                   Register
                 </Button>
               </>
@@ -107,9 +94,7 @@ export function AppNavbar({ user }: AppNavbarProps) {
         </nav>
       </header>
 
-      {isLoggedIn && (
-        <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />
-      )}
+      {isLoggedIn && <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />}
     </>
   );
 }

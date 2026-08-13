@@ -32,9 +32,7 @@ export default async function TvPage({ params }: PageProps) {
   const videos = show.videos?.results ?? [];
 
   const episodeRuntime =
-    show.episode_run_time && show.episode_run_time.length > 0
-      ? show.episode_run_time[0]
-      : null;
+    show.episode_run_time && show.episode_run_time.length > 0 ? show.episode_run_time[0] : null;
 
   const extraMetaParts: string[] = [];
   if (show.number_of_seasons) {
@@ -49,10 +47,10 @@ export default async function TvPage({ params }: PageProps) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className='flex min-h-screen flex-col'>
       <AppNavbar user={session?.user ?? null} />
 
-      <main className="flex-1">
+      <main className='flex-1'>
         <MediaHero
           title={show.name}
           tagline={show.tagline}

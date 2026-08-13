@@ -21,8 +21,7 @@ export function HeroCard() {
 
   const slidingView = view === "home" ? "home" : "auth";
 
-  const authConfig =
-    authMode === "signup" ? viewConfigs.signup : viewConfigs.login;
+  const authConfig = authMode === "signup" ? viewConfigs.signup : viewConfigs.login;
 
   const goToLogin = () => {
     setAuthMode("login");
@@ -52,11 +51,7 @@ export function HeroCard() {
       panels={{
         home: <HomePanel onLogin={goToLogin} onRegister={goToSignup} />,
         auth:
-          authMode === "signup" ? (
-            <SignupPanel onBack={goHome} />
-          ) : (
-            <LoginPanel onBack={goHome} />
-          ),
+          authMode === "signup" ? <SignupPanel onBack={goHome} /> : <LoginPanel onBack={goHome} />,
       }}
     />
   );

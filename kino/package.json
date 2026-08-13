@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [],
   "author": "",
@@ -18,5 +20,8 @@
       "onFail": "download"
     }
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "prettier": "^3.9.6"
+  }
 }

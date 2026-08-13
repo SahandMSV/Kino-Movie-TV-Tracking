@@ -8,8 +8,7 @@ import { translations } from "@/lib/translations";
 export function useTranslation() {
   const { language } = useLanguage();
 
-  const t = (key: TranslationKey) =>
-    getNestedValue(translations[language], key);
+  const t = (key: TranslationKey) => getNestedValue(translations[language], key);
 
   return {
     t,

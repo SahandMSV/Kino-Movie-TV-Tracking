@@ -19,13 +19,10 @@ const registerSchema = z
         /^[a-z0-9_]+$/,
         "Username can only contain lowercase letters, numbers and underscores",
       ),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(128),
+    password: z.string().min(8, "Password must be at least 8 characters").max(128),
     confirmPassword: z.string(),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine(data => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
@@ -103,10 +100,7 @@ export type LoginState = {
   error?: string;
 };
 
-export async function loginAction(
-  _prev: LoginState,
-  formData: FormData,
-): Promise<LoginState> {
+export async function loginAction(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const raw = {
     emailOrUsername: formData.get("emailOrUsername"),
     password: formData.get("password"),

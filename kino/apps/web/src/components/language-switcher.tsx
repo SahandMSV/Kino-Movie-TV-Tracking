@@ -29,24 +29,24 @@ export function LanguageSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(buttonVariants({ variant: "outline", size: "icon" }))}
-        aria-label="Select language"
+        aria-label='Select language'
       >
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode='wait' initial={false}>
           <motion.div
             key={language}
-            className="flex items-center justify-center"
+            className='flex items-center justify-center'
             initial={{ opacity: 0, rotate: -10 }}
             animate={{ opacity: 1, rotate: 0 }}
             exit={{ opacity: 0, rotate: 10 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
-            <Languages className="size-4" />
+            <Languages className='size-4' />
           </motion.div>
         </AnimatePresence>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end">
-        <AnimatePresence mode="wait">
+      <DropdownMenuContent align='end'>
+        <AnimatePresence mode='wait'>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -57,10 +57,10 @@ export function LanguageSwitcher() {
               <DropdownMenuItem
                 key={code}
                 onClick={() => setLanguage(code)}
-                className="cursor-pointer"
+                className='cursor-pointer'
               >
                 {label}
-                {language === code && <Check className="ml-auto" />}
+                {language === code && <Check className='ml-auto' />}
               </DropdownMenuItem>
             ))}
           </motion.div>

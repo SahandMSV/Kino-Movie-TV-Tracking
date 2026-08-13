@@ -9,7 +9,12 @@ const multiSearchResponseSchema = tmdbPaginatedSchema(tmdbMultiSearchResultSchem
 
 export async function searchMulti(query: string, page = 1) {
   if (!query.trim()) {
-    return { page: 1, results: [] as TmdbMultiSearchResult[], total_pages: 0, total_results: 0 };
+    return {
+      page: 1,
+      results: [] as TmdbMultiSearchResult[],
+      total_pages: 0,
+      total_results: 0,
+    };
   }
 
   const data = await tmdbFetch({

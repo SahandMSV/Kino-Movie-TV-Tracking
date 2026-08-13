@@ -24,38 +24,24 @@ export function ThemeToggle() {
   }, []);
 
   const getTriggerIcon = () => {
-    if (!mounted) return <Laptop className="size-4" />;
+    if (!mounted) return <Laptop className='size-4' />;
 
     if (theme === "system") {
-      return resolvedTheme === "dark" ? (
-        <Moon className="size-4" />
-      ) : (
-        <Sun className="size-4" />
-      );
+      return resolvedTheme === "dark" ? <Moon className='size-4' /> : <Sun className='size-4' />;
     }
 
-    return theme === "dark" ? (
-      <Moon className="size-4" />
-    ) : (
-      <Sun className="size-4" />
-    );
+    return theme === "dark" ? <Moon className='size-4' /> : <Sun className='size-4' />;
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="outline" size="icon" aria-label="Change theme">
-            <AnimatePresence mode="wait" initial={false}>
+          <Button variant='outline' size='icon' aria-label='Change theme'>
+            <AnimatePresence mode='wait' initial={false}>
               <motion.div
-                key={
-                  mounted
-                    ? theme === "system"
-                      ? resolvedTheme || "system"
-                      : theme
-                    : "loading"
-                }
-                className="flex items-center justify-center"
+                key={mounted ? (theme === "system" ? resolvedTheme || "system" : theme) : "loading"}
+                className='flex items-center justify-center'
                 initial={{ opacity: 0, rotate: -10 }}
                 animate={{ opacity: 1, rotate: 0 }}
                 exit={{ opacity: 0, rotate: 10 }}
@@ -68,8 +54,8 @@ export function ThemeToggle() {
         }
       />
 
-      <DropdownMenuContent align="end">
-        <AnimatePresence mode="wait">
+      <DropdownMenuContent align='end'>
+        <AnimatePresence mode='wait'>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -78,24 +64,24 @@ export function ThemeToggle() {
           >
             <DropdownMenuRadioGroup
               value={theme}
-              onValueChange={(value) => {
+              onValueChange={value => {
                 setTimeout(() => {
                   setTheme(value as "light" | "dark" | "system");
                 }, 80);
               }}
             >
-              <DropdownMenuRadioItem value="system">
-                <Laptop className="size-4" />
+              <DropdownMenuRadioItem value='system'>
+                <Laptop className='size-4' />
                 System
               </DropdownMenuRadioItem>
 
-              <DropdownMenuRadioItem value="light">
-                <Sun className="size-4" />
+              <DropdownMenuRadioItem value='light'>
+                <Sun className='size-4' />
                 Light
               </DropdownMenuRadioItem>
 
-              <DropdownMenuRadioItem value="dark">
-                <Moon className="size-4" />
+              <DropdownMenuRadioItem value='dark'>
+                <Moon className='size-4' />
                 Dark
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>

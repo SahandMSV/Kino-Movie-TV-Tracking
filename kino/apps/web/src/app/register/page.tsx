@@ -11,7 +11,7 @@ export default async function RegisterPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center px-6">
+    <main className='relative flex min-h-screen items-center justify-center px-6'>
       <Entrance>
         <HeroCard />
       </Entrance>

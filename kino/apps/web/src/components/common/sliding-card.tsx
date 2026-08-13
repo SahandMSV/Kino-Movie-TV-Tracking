@@ -49,10 +49,10 @@ export function SlidingCard<T extends string>({
       className={`relative shrink-0 overflow-hidden ${className ?? ""}`}
     >
       {/* Same border style as the outline Button */}
-      <Card className="h-full w-full border border-border dark:border-input">
-        <CardContent className="relative h-full p-0">
+      <Card className='h-full w-full border border-border dark:border-input'>
+        <CardContent className='relative h-full p-0'>
           <motion.div
-            className="flex h-full"
+            className='flex h-full'
             style={{ gap: `${gap}px` }}
             animate={{ x: -offset }}
             transition={{
@@ -60,13 +60,13 @@ export function SlidingCard<T extends string>({
               ease: [0.22, 1, 0.36, 1],
             }}
           >
-            {orderedKeys.map((key) => {
+            {orderedKeys.map(key => {
               const isActive = key === view;
 
               return (
                 <motion.div
                   key={key}
-                  className="shrink-0"
+                  className='shrink-0'
                   style={{
                     width: configs[key].width,
                     height: configs[key].height,
@@ -77,9 +77,7 @@ export function SlidingCard<T extends string>({
                     ease: [0.22, 1, 0.36, 1],
                   }}
                 >
-                  <div className="flex h-full w-full flex-col p-12">
-                    {panels[key]}
-                  </div>
+                  <div className='flex h-full w-full flex-col p-12'>{panels[key]}</div>
                 </motion.div>
               );
             })}

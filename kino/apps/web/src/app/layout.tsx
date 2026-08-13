@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang='en'
       className={cn(
         "h-full",
         "antialiased",
@@ -42,12 +42,12 @@ export default function RootLayout({
       )}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className='min-h-full flex flex-col'>
         <ThemeProvider>
           <Suspense fallback={null}>
             <LanguageProvider>{children}</LanguageProvider>
           </Suspense>
-          <Toaster position="bottom-right" richColors />
+          <Toaster position='bottom-right' richColors />
         </ThemeProvider>
       </body>
     </html>

@@ -1,9 +1,6 @@
 import type { TranslationKey } from "./translation-types";
 
-export function getNestedValue<T extends object>(
-  obj: T,
-  key: TranslationKey,
-): string {
+export function getNestedValue<T extends object>(obj: T, key: TranslationKey): string {
   let value: unknown = obj;
 
   for (const part of key.split(".")) {

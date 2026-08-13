@@ -32,10 +32,10 @@ export default async function MoviePage({ params }: PageProps) {
   const videos = movie.videos?.results ?? [];
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className='flex min-h-screen flex-col'>
       <AppNavbar user={session?.user ?? null} />
 
-      <main className="flex-1">
+      <main className='flex-1'>
         <MediaHero
           title={movie.title}
           tagline={movie.tagline}

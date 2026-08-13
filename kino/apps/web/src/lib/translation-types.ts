@@ -10,9 +10,7 @@ export type Translation = typeof translations.en;
  * ...
  */
 type NestedKeyOf<T> = {
-  [K in keyof T & string]: T[K] extends Record<string, unknown>
-    ? `${K}.${NestedKeyOf<T[K]>}`
-    : K;
+  [K in keyof T & string]: T[K] extends Record<string, unknown> ? `${K}.${NestedKeyOf<T[K]>}` : K;
 }[keyof T & string];
 
 export type TranslationKey = NestedKeyOf<Translation>;

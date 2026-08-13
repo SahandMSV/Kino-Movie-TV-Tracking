@@ -8,11 +8,11 @@ export default function HomeScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ThemedView style={styles.heroSection}>
-          <ThemedText type="title" style={styles.title}>
+          <ThemedText type='title' style={styles.title}>
             Kino
           </ThemedText>
 
-          <ThemedText type="subtitle" style={styles.subtitle}>
+          <ThemedText type='subtitle' style={styles.subtitle}>
             Doesn&apos;t look like anything to me.
           </ThemedText>
 

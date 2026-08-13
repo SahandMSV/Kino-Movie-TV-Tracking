@@ -18,7 +18,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   trustHost: true,
   adapter: MongoDBAdapter(clientPromise),
-  session: { strategy: "jwt" }, // required when using Credentials
+  session: { strategy: "jwt" },
   providers: [
     Credentials({
       name: "credentials",
