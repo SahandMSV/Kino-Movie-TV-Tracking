@@ -1,25 +1,44 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { AppNavbar } from "@/components/features/home/home-nav";
 import { MediaHero } from "@/components/features/media/media-hero";
+import { TrackingControls } from "@/components/features/media/tracking-controls";
 import { CastSection } from "@/components/features/media/cast-section";
+import { CrewSection } from "@/components/features/media/crew-section";
 import { VideosSection } from "@/components/features/media/videos-section";
 import { getTv } from "@/lib/tmdb/details";
-import { formatRuntime } from "@/lib/tmdb/format";
+import { getWatchEntryForMedia } from "@/lib/actions/tracking";
 
 type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default async function TvPage({ params }: PageProps) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const numericId = Number(id);
+  if (!Number.isFinite(numericId) || numericId <= 0) {
+    return { title: "TV Show · Kino" };
+  }
+
+  try {
+    const show = await getTv(numericId);
+    return {
+      title: `${show.name} · Kino`,
+      description: show.overview ?? undefined,
+    };
+  } catch {
+    return { title: "TV Show · Kino" };
+  }
+}
+
+export default async function TvDetailPage({ params }: PageProps) {
   const { id } = await params;
   const numericId = Number(id);
 
   if (!Number.isFinite(numericId) || numericId <= 0) {
     notFound();
   }
-
-  const session = await auth();
 
   let show;
   try {
@@ -28,23 +47,23 @@ export default async function TvPage({ params }: PageProps) {
     notFound();
   }
 
-  const cast = show.credits?.cast ?? [];
-  const videos = show.videos?.results ?? [];
+  const session = await auth();
+  const watchEntry = session?.user ? await getWatchEntryForMedia(numericId, "tv") : null;
 
   const episodeRuntime =
     show.episode_run_time && show.episode_run_time.length > 0 ? show.episode_run_time[0] : null;
 
-  const extraMetaParts: string[] = [];
-  if (show.number_of_seasons) {
-    extraMetaParts.push(
-      `${show.number_of_seasons} season${show.number_of_seasons === 1 ? "" : "s"}`,
-    );
-  }
-  if (show.number_of_episodes) {
-    extraMetaParts.push(
-      `${show.number_of_episodes} episode${show.number_of_episodes === 1 ? "" : "s"}`,
-    );
-  }
+  const seasonsLabel =
+    show.number_of_seasons != null
+      ? `${show.number_of_seasons} season${show.number_of_seasons === 1 ? "" : "s"}`
+      : null;
+
+  const episodesLabel =
+    show.number_of_episodes != null
+      ? `${show.number_of_episodes} episode${show.number_of_episodes === 1 ? "" : "s"}`
+      : null;
+
+  const extraMeta = [seasonsLabel, episodesLabel].filter(Boolean).join(" · ") || null;
 
   return (
     <div className='flex min-h-screen flex-col'>
@@ -62,11 +81,22 @@ export default async function TvPage({ params }: PageProps) {
           voteAverage={show.vote_average}
           voteCount={show.vote_count}
           genres={show.genres}
-          extraMeta={extraMetaParts.length ? extraMetaParts.join(" · ") : null}
+          extraMeta={extraMeta}
         />
 
-        <CastSection cast={cast} />
-        <VideosSection videos={videos} />
+        {session?.user ? (
+          <TrackingControls
+            tmdbId={show.id}
+            mediaType='tv'
+            title={show.name}
+            posterPath={show.poster_path}
+            initialStatus={watchEntry?.status ?? null}
+          />
+        ) : null}
+
+        <CastSection cast={show.credits?.cast ?? []} />
+        <CrewSection crew={show.credits?.crew ?? []} />
+        <VideosSection videos={show.videos?.results ?? []} />
       </main>
     </div>
   );

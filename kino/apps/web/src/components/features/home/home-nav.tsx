@@ -1,16 +1,16 @@
-// src/components/features/home/app-navbar.tsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, LogOut, Search } from "lucide-react";
+import { Bookmark, Clapperboard, LogOut, Search } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { SearchModal } from "./search-modal";
+import { cn } from "@/lib/utils";
 
 type AppNavbarProps = {
   user?: {
@@ -39,23 +39,57 @@ export function AppNavbar({ user }: AppNavbarProps) {
     <>
       <header className='sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl'>
         <nav className='mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6'>
-          {/* Brand */}
-          <Link
-            href='/'
-            className='text-lg font-semibold tracking-tight transition-opacity hover:opacity-80'
-          >
-            Kino
-          </Link>
+          <div className='flex items-center gap-4'>
+            <Link
+              href='/'
+              className='text-lg font-semibold tracking-tight transition-opacity hover:opacity-80'
+            >
+              Kino
+            </Link>
 
-          {/* Right actions */}
+            {isLoggedIn ? (
+              <div className='hidden items-center gap-1 sm:flex'>
+                <Link
+                  href='/watchlist'
+                  className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                >
+                  Watchlist
+                </Link>
+                <Link
+                  href='/progress'
+                  className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                >
+                  Progress
+                </Link>
+              </div>
+            ) : null}
+          </div>
+
           <div className='flex items-center gap-1'>
-            {/* Theme + Language – always visible */}
             <ThemeToggle />
             <LanguageSwitcher />
 
             {isLoggedIn ? (
               <>
-                {/* Search */}
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='sm:hidden'
+                  aria-label='Watchlist'
+                  onClick={() => router.push("/watchlist")}
+                >
+                  <Bookmark className='size-4' />
+                </Button>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='sm:hidden'
+                  aria-label='Progress'
+                  onClick={() => router.push("/progress")}
+                >
+                  <Clapperboard className='size-4' />
+                </Button>
+
                 <Button
                   variant='ghost'
                   size='icon'
@@ -65,17 +99,10 @@ export function AppNavbar({ user }: AppNavbarProps) {
                   <Search className='size-4' />
                 </Button>
 
-                {/* Notifications */}
-                <Button variant='ghost' size='icon' aria-label='Notifications'>
-                  <Bell className='size-4' />
-                </Button>
-
-                {/* Account name */}
                 <span className='mx-1 hidden text-sm text-muted-foreground sm:inline'>
                   {displayName}
                 </span>
 
-                {/* Logout – icon only */}
                 <Button variant='ghost' size='icon' aria-label='Sign out' onClick={handleLogout}>
                   <LogOut className='size-4' />
                 </Button>

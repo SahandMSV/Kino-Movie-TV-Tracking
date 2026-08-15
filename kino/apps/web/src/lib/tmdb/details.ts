@@ -88,8 +88,51 @@ const tvDetailSchema = z.object({
   external_ids: externalIdsSchema.optional(),
 });
 
+const personCreditItemSchema = z.object({
+  id: z.number(),
+  media_type: z.enum(["movie", "tv"]),
+  title: z.string().optional(),
+  name: z.string().optional(),
+  original_title: z.string().optional(),
+  original_name: z.string().optional(),
+  poster_path: z.string().nullable().optional(),
+  backdrop_path: z.string().nullable().optional(),
+  release_date: z.string().nullable().optional(),
+  first_air_date: z.string().nullable().optional(),
+  character: z.string().nullable().optional(),
+  job: z.string().nullable().optional(),
+  department: z.string().nullable().optional(),
+  episode_count: z.number().optional(),
+  vote_average: z.number().optional(),
+  popularity: z.number().optional(),
+});
+
+const combinedCreditsSchema = z.object({
+  cast: z.array(personCreditItemSchema).default([]),
+  crew: z.array(personCreditItemSchema).default([]),
+});
+
+const personDetailSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  biography: z.string().nullable().optional(),
+  birthday: z.string().nullable().optional(),
+  deathday: z.string().nullable().optional(),
+  place_of_birth: z.string().nullable().optional(),
+  profile_path: z.string().nullable(),
+  known_for_department: z.string().nullable().optional(),
+  gender: z.number().optional(),
+  also_known_as: z.array(z.string()).optional(),
+  popularity: z.number().optional(),
+  homepage: z.string().nullable().optional(),
+  combined_credits: combinedCreditsSchema.optional(),
+  external_ids: externalIdsSchema.optional(),
+});
+
 export type MovieDetail = z.infer<typeof movieDetailSchema>;
 export type TvDetail = z.infer<typeof tvDetailSchema>;
+export type PersonDetail = z.infer<typeof personDetailSchema>;
+export type PersonCreditItem = z.infer<typeof personCreditItemSchema>;
 export type CreditPerson = z.infer<typeof creditPersonSchema>;
 export type TmdbVideo = z.infer<typeof videoSchema>;
 
@@ -117,4 +160,17 @@ export async function getTv(id: number): Promise<TvDetail> {
   });
 
   return tvDetailSchema.parse(data);
+}
+
+export async function getPerson(id: number): Promise<PersonDetail> {
+  const data = await tmdbFetch({
+    path: `/person/${id}`,
+    searchParams: {
+      language: "en-US",
+      append_to_response: "combined_credits,external_ids",
+    },
+    next: { revalidate: 60 * 60 * 6 },
+  });
+
+  return personDetailSchema.parse(data);
 }

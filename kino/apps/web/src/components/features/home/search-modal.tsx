@@ -64,8 +64,9 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
       router.push(`/movie/${item.id}`);
     } else if (item.media_type === "tv") {
       router.push(`/tv/${item.id}`);
+    } else if (item.media_type === "person") {
+      router.push(`/person/${item.id}`);
     }
-    // people intentionally skipped for now
   };
 
   return (
