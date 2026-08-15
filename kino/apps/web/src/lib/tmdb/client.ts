@@ -37,10 +37,14 @@ export async function tmdbFetch<T>({
   });
 
   if (!res.ok) {
-    // Basic handling - improve later (rate-limit retry, logging, etc.)
     const body = await res.text();
     throw new Error(`TMDB ${res.status} ${res.statusText}: ${path} — ${body.slice(0, 200)}`);
   }
 
-  return res.json() as Promise<T>;
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(`TMDB returned non-JSON for ${path}: ${text.slice(0, 120)}`);
+  }
 }
