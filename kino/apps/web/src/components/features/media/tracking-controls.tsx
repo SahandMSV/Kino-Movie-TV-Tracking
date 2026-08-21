@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Bookmark, Check, Eye, Loader2, X } from "lucide-react";
+import { Bookmark, Check, Eye, Loader2, Pause, X, Ban } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { setWatchStatus, removeWatchEntry } from "@/lib/actions/tracking";
@@ -24,6 +24,8 @@ const ACTIONS: {
   { status: "plan_to_watch", label: "Watchlist", icon: Bookmark },
   { status: "watching", label: "Watching", icon: Eye },
   { status: "watched", label: "Watched", icon: Check },
+  { status: "on_hold", label: "On hold", icon: Pause },
+  { status: "dropped", label: "Dropped", icon: Ban },
 ];
 
 export function TrackingControls({
@@ -52,13 +54,15 @@ export function TrackingControls({
       }
 
       setStatus(res.status ?? next);
-      toast.success(
-        next === "plan_to_watch"
-          ? "Added to watchlist"
-          : next === "watching"
-            ? "Marked as watching"
-            : "Marked as watched",
-      );
+
+      const messages: Record<WatchStatus, string> = {
+        plan_to_watch: "Added to watchlist",
+        watching: "Marked as watching",
+        watched: "Marked as watched",
+        on_hold: "Put on hold",
+        dropped: "Marked as dropped",
+      };
+      toast.success(messages[next]);
     });
   };
 
@@ -75,7 +79,7 @@ export function TrackingControls({
   };
 
   return (
-    <div className='mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-2 px-4 pb-2 sm:px-6 lg:justify-start'>
+    <div className='mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-2 px-4 pb-6 sm:px-6 lg:justify-start'>
       {ACTIONS.map(({ status: s, label, icon: Icon }) => {
         const active = status === s;
         return (

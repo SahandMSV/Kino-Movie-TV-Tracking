@@ -2,8 +2,7 @@
 
 import { motion } from "framer-motion";
 import { backdropUrl, posterUrl } from "@/lib/tmdb/config";
-import { formatRuntime, formatYear, formatVote } from "@/lib/tmdb/format";
-import { cn } from "@/lib/utils";
+import { formatRuntime, formatVote, formatYear } from "@/lib/tmdb/format";
 
 type MediaHeroProps = {
   title: string;
@@ -13,10 +12,16 @@ type MediaHeroProps = {
   backdropPath?: string | null;
   releaseDate?: string | null;
   runtime?: number | null;
-  voteAverage: number;
-  voteCount: number;
-  genres: { id: number; name: string }[];
-  extraMeta?: string | null;
+  voteAverage?: number;
+  voteCount?: number;
+  genres?: { id: number; name: string }[];
+  status?: string | null;
+  mediaType: "movie" | "tv";
+  // TV-only extras
+  numberOfSeasons?: number | null;
+  numberOfEpisodes?: number | null;
+  firstAirDate?: string | null;
+  lastAirDate?: string | null;
 };
 
 export function MediaHero({
@@ -27,15 +32,32 @@ export function MediaHero({
   backdropPath,
   releaseDate,
   runtime,
-  voteAverage,
-  voteCount,
-  genres,
-  extraMeta,
+  voteAverage = 0,
+  voteCount = 0,
+  genres = [],
+  status,
+  mediaType,
+  numberOfSeasons,
+  numberOfEpisodes,
+  firstAirDate,
+  lastAirDate,
 }: MediaHeroProps) {
-  const year = formatYear(releaseDate);
-  const runtimeStr = formatRuntime(runtime);
   const poster = posterUrl(posterPath, "w500");
   const backdrop = backdropUrl(backdropPath, "w1280");
+  const year = formatYear(releaseDate ?? firstAirDate);
+  const runtimeLabel = formatRuntime(runtime);
+  const voteLabel = voteAverage > 0 ? formatVote(voteAverage) : null;
+
+  const meta: string[] = [];
+  if (year) meta.push(year);
+  if (runtimeLabel) meta.push(runtimeLabel);
+  if (mediaType === "tv" && numberOfSeasons) {
+    meta.push(`${numberOfSeasons} season${numberOfSeasons === 1 ? "" : "s"}`);
+  }
+  if (mediaType === "tv" && numberOfEpisodes) {
+    meta.push(`${numberOfEpisodes} episode${numberOfEpisodes === 1 ? "" : "s"}`);
+  }
+  if (status) meta.push(status);
 
   return (
     <section className='relative w-full overflow-hidden'>
@@ -43,19 +65,14 @@ export function MediaHero({
       <div className='absolute inset-0 -z-10'>
         {backdrop ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={backdrop}
-            alt=''
-            className='h-full w-full object-cover object-top opacity-40 dark:opacity-30'
-          />
+          <img src={backdrop} alt='' className='h-full w-full object-cover object-top opacity-40' />
         ) : (
           <div className='h-full w-full bg-muted' />
         )}
-        <div className='absolute inset-0 bg-linear-to-t from-background via-background/80 to-background/20' />
-        <div className='absolute inset-0 bg-linear-to-r from-background via-transparent to-transparent' />
+        <div className='absolute inset-0 bg-linear-to-t from-background via-background/90 to-background/40' />
       </div>
 
-      <div className='mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-16 pt-10 sm:px-6 sm:pt-14 lg:flex-row lg:items-center lg:gap-12'>
+      <div className='mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-10 pt-10 sm:px-6 sm:pt-14 lg:flex-row lg:items-start lg:gap-12'>
         {/* Poster */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -75,7 +92,7 @@ export function MediaHero({
           </div>
         </motion.div>
 
-        {/* Text content */}
+        {/* Info */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -92,42 +109,41 @@ export function MediaHero({
           </div>
 
           {/* Meta row */}
-          <div className='flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground lg:justify-start'>
-            {year ? <span>{year}</span> : null}
-            {runtimeStr ? (
-              <>
-                <span className='text-border'>·</span>
-                <span>{runtimeStr}</span>
-              </>
-            ) : null}
-            {extraMeta ? (
-              <>
-                <span className='text-border'>·</span>
-                <span>{extraMeta}</span>
-              </>
-            ) : null}
-            <span className='text-border'>·</span>
-            <span className='inline-flex items-center gap-1'>
-              <span className='font-medium text-foreground'>{formatVote(voteAverage)}</span>
-              <span className='text-xs'>({voteCount.toLocaleString()})</span>
-            </span>
-          </div>
+          {meta.length > 0 && (
+            <div className='flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground lg:justify-start'>
+              {meta.map((item, i) => (
+                <span key={item} className='flex items-center gap-x-3'>
+                  {i > 0 && <span className='text-border'>·</span>}
+                  {item}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Genres */}
-          {genres.length > 0 ? (
+          {genres.length > 0 && (
             <div className='flex flex-wrap justify-center gap-2 lg:justify-start'>
               {genres.map(g => (
                 <span
                   key={g.id}
-                  className={cn(
-                    "rounded-full border border-border/70 bg-background/60 px-3 py-0.5 text-xs font-medium text-muted-foreground backdrop-blur-sm",
-                  )}
+                  className='rounded-full border border-border/60 bg-muted/50 px-2.5 py-0.5 text-xs font-medium'
                 >
                   {g.name}
                 </span>
               ))}
             </div>
-          ) : null}
+          )}
+
+          {/* Rating */}
+          {voteLabel && (
+            <div className='flex items-center justify-center gap-2 text-sm lg:justify-start'>
+              <span className='font-semibold tabular-nums text-foreground'>{voteLabel}</span>
+              <span className='text-muted-foreground'>
+                / 10
+                {voteCount > 0 ? ` · ${voteCount.toLocaleString()} votes` : null}
+              </span>
+            </div>
+          )}
 
           {/* Overview */}
           {overview ? (

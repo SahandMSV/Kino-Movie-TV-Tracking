@@ -46,6 +46,19 @@ const WatchEntrySchema = new Schema(
       type: Date,
       default: null,
     },
+    // NEW
+    rating: {
+      type: Number,
+      min: 0.5,
+      max: 10,
+      default: null,
+    },
+    notes: {
+      type: String,
+      maxlength: 4000,
+      default: null,
+      trim: true,
+    },
   },
   {
     timestamps: true,

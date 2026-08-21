@@ -22,17 +22,24 @@ const removeSchema = z.object({
   mediaType: mediaTypeSchema,
 });
 
+const ratingNotesSchema = z.object({
+  tmdbId: z.coerce.number().int().positive(),
+  mediaType: mediaTypeSchema,
+  rating: z.number().min(0.5).max(10).multipleOf(0.5).nullable().optional(),
+  notes: z.string().max(4000).nullable().optional(),
+});
+
 export type TrackingActionResult = {
   success?: boolean;
   error?: string;
   status?: WatchStatus | null;
+  rating?: number | null;
+  notes?: string | null;
 };
 
 async function requireUserId() {
   const session = await auth();
-  if (!session?.user?.id) {
-    return null;
-  }
+  if (!session?.user?.id) return null;
   return session.user.id;
 }
 
@@ -44,14 +51,10 @@ export async function setWatchStatus(input: {
   posterPath?: string | null;
 }): Promise<TrackingActionResult> {
   const userId = await requireUserId();
-  if (!userId) {
-    return { error: "You must be signed in" };
-  }
+  if (!userId) return { error: "You must be signed in" };
 
   const parsed = upsertSchema.safeParse(input);
-  if (!parsed.success) {
-    return { error: "Invalid tracking data" };
-  }
+  if (!parsed.success) return { error: "Invalid tracking data" };
 
   const { tmdbId, mediaType, status, title, posterPath } = parsed.data;
 
@@ -78,10 +81,65 @@ export async function setWatchStatus(input: {
     revalidatePath("/watchlist");
     revalidatePath("/progress");
 
-    return { success: true, status: entry.status as WatchStatus };
+    return {
+      success: true,
+      status: entry.status as WatchStatus,
+      rating: entry.rating ?? null,
+      notes: entry.notes ?? null,
+    };
   } catch (err) {
     console.error("setWatchStatus error:", err);
     return { error: "Could not update tracking" };
+  }
+}
+
+export async function setRatingAndNotes(input: {
+  tmdbId: number;
+  mediaType: "movie" | "tv";
+  rating?: number | null;
+  notes?: string | null;
+}): Promise<TrackingActionResult> {
+  const userId = await requireUserId();
+  if (!userId) return { error: "You must be signed in" };
+
+  const parsed = ratingNotesSchema.safeParse(input);
+  if (!parsed.success) return { error: "Invalid rating or notes" };
+
+  const { tmdbId, mediaType, rating, notes } = parsed.data;
+
+  try {
+    await connectMongoose();
+
+    // Only update if an entry already exists (user must have a status first)
+    const existing = await WatchEntry.findOne({ userId, tmdbId, mediaType });
+    if (!existing) {
+      return { error: "Add a status first (Watchlist / Watching / Watched…)" };
+    }
+
+    const update: Record<string, unknown> = {};
+    if (rating !== undefined) update.rating = rating;
+    if (notes !== undefined) update.notes = notes === "" ? null : notes;
+
+    const entry = await WatchEntry.findOneAndUpdate(
+      { userId, tmdbId, mediaType },
+      { $set: update },
+      { new: true },
+    );
+
+    revalidatePath(`/movie/${tmdbId}`);
+    revalidatePath(`/tv/${tmdbId}`);
+    revalidatePath("/watchlist");
+    revalidatePath("/progress");
+
+    return {
+      success: true,
+      status: entry!.status as WatchStatus,
+      rating: entry!.rating ?? null,
+      notes: entry!.notes ?? null,
+    };
+  } catch (err) {
+    console.error("setRatingAndNotes error:", err);
+    return { error: "Could not save rating / notes" };
   }
 }
 
@@ -90,14 +148,10 @@ export async function removeWatchEntry(input: {
   mediaType: "movie" | "tv";
 }): Promise<TrackingActionResult> {
   const userId = await requireUserId();
-  if (!userId) {
-    return { error: "You must be signed in" };
-  }
+  if (!userId) return { error: "You must be signed in" };
 
   const parsed = removeSchema.safeParse(input);
-  if (!parsed.success) {
-    return { error: "Invalid tracking data" };
-  }
+  if (!parsed.success) return { error: "Invalid tracking data" };
 
   const { tmdbId, mediaType } = parsed.data;
 
@@ -110,7 +164,7 @@ export async function removeWatchEntry(input: {
     revalidatePath("/watchlist");
     revalidatePath("/progress");
 
-    return { success: true, status: null };
+    return { success: true, status: null, rating: null, notes: null };
   } catch (err) {
     console.error("removeWatchEntry error:", err);
     return { error: "Could not remove tracking" };
@@ -120,14 +174,23 @@ export async function removeWatchEntry(input: {
 export async function getWatchEntryForMedia(
   tmdbId: number,
   mediaType: "movie" | "tv",
-): Promise<{ status: WatchStatus } | null> {
+): Promise<{
+  status: WatchStatus;
+  rating: number | null;
+  notes: string | null;
+} | null> {
   const userId = await requireUserId();
   if (!userId) return null;
 
   await connectMongoose();
   const entry = await WatchEntry.findOne({ userId, tmdbId, mediaType }).lean();
   if (!entry) return null;
-  return { status: entry.status as WatchStatus };
+
+  return {
+    status: entry.status as WatchStatus,
+    rating: (entry.rating as number | null) ?? null,
+    notes: (entry.notes as string | null) ?? null,
+  };
 }
 
 export async function listWatchEntriesByStatuses(statuses: WatchStatus[]) {
@@ -151,5 +214,7 @@ export async function listWatchEntriesByStatuses(statuses: WatchStatus[]) {
     posterPath: e.posterPath as string | null,
     watchedAt: e.watchedAt ? new Date(e.watchedAt).toISOString() : null,
     updatedAt: e.updatedAt ? new Date(e.updatedAt).toISOString() : null,
+    rating: (e.rating as number | null) ?? null,
+    notes: (e.notes as string | null) ?? null,
   }));
 }

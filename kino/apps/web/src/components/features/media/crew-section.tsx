@@ -9,60 +9,47 @@ type CrewSectionProps = {
   crew: CreditPerson[];
 };
 
-const PRIORITY_JOBS = new Set([
+const PRIORITY_JOBS = [
   "Director",
   "Writer",
   "Screenplay",
   "Story",
-  "Creator",
-  "Executive Producer",
   "Producer",
+  "Executive Producer",
   "Director of Photography",
   "Original Music Composer",
   "Editor",
-]);
+];
 
-function pickCrew(crew: CreditPerson[]): CreditPerson[] {
-  const scored = crew
-    .filter(p => p.job)
-    .map(p => {
-      const job = p.job ?? "";
-      let score = 0;
-      if (job === "Director") score += 100;
-      else if (job === "Creator") score += 90;
-      else if (job === "Writer" || job === "Screenplay" || job === "Story") score += 80;
-      else if (job === "Executive Producer") score += 50;
-      else if (job === "Producer") score += 40;
-      else if (PRIORITY_JOBS.has(job)) score += 30;
-      else score += 5;
-      return { person: p, score };
-    })
-    .sort((a, b) => b.score - a.score);
+function pickCrew(crew: CreditPerson[], limit = 12) {
+  const scored = [...crew].map(c => {
+    const job = c.job ?? "";
+    const idx = PRIORITY_JOBS.indexOf(job);
+    return { ...c, _score: idx === -1 ? 100 : idx };
+  });
 
+  // Deduplicate by person + job
   const seen = new Set<string>();
-  const result: CreditPerson[] = [];
-
-  for (const { person } of scored) {
-    const key = `${person.id}-${person.job}`;
-    if (seen.has(key)) continue;
+  const unique = scored.filter(c => {
+    const key = `${c.id}-${c.job}`;
+    if (seen.has(key)) return false;
     seen.add(key);
-    result.push(person);
-    if (result.length >= 12) break;
-  }
+    return true;
+  });
 
-  return result;
+  return unique.sort((a, b) => a._score - b._score).slice(0, limit);
 }
 
 export function CrewSection({ crew }: CrewSectionProps) {
-  const selected = pickCrew(crew);
-  if (!selected.length) return null;
+  const top = pickCrew(crew);
+  if (!top.length) return null;
 
   return (
     <section className='mx-auto max-w-6xl px-4 py-10 sm:px-6'>
       <h2 className='mb-6 text-xl font-semibold tracking-tight'>Crew</h2>
 
       <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'>
-        {selected.map((person, i) => {
+        {top.map((person, i) => {
           const img = posterUrl(person.profile_path, "w185");
           return (
             <motion.div
@@ -71,7 +58,7 @@ export function CrewSection({ crew }: CrewSectionProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{
                 duration: 0.3,
-                delay: i * 0.03,
+                delay: i * 0.02,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >

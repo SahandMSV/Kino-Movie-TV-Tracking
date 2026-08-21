@@ -1,102 +1,82 @@
 import { notFound } from "next/navigation";
-import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { AppNavbar } from "@/components/features/home/home-nav";
 import { MediaHero } from "@/components/features/media/media-hero";
-import { TrackingControls } from "@/components/features/media/tracking-controls";
 import { CastSection } from "@/components/features/media/cast-section";
 import { CrewSection } from "@/components/features/media/crew-section";
 import { VideosSection } from "@/components/features/media/videos-section";
+import { TrackingControls } from "@/components/features/media/tracking-controls";
+import { RatingNotes } from "@/components/features/media/rating-notes";
 import { getTv } from "@/lib/tmdb/details";
 import { getWatchEntryForMedia } from "@/lib/actions/tracking";
 
-type PageProps = {
+type Props = {
   params: Promise<{ id: string }>;
 };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export default async function TvPage({ params }: Props) {
   const { id } = await params;
-  const numericId = Number(id);
-  if (!Number.isFinite(numericId) || numericId <= 0) {
-    return { title: "TV Show · Kino" };
-  }
+  const tmdbId = Number(id);
+  if (!Number.isFinite(tmdbId) || tmdbId <= 0) notFound();
 
-  try {
-    const show = await getTv(numericId);
-    return {
-      title: `${show.name} · Kino`,
-      description: show.overview ?? undefined,
-    };
-  } catch {
-    return { title: "TV Show · Kino" };
-  }
-}
+  const [session, show] = await Promise.all([auth(), getTv(tmdbId).catch(() => null)]);
 
-export default async function TvDetailPage({ params }: PageProps) {
-  const { id } = await params;
-  const numericId = Number(id);
+  if (!show) notFound();
 
-  if (!Number.isFinite(numericId) || numericId <= 0) {
-    notFound();
-  }
+  const watchEntry = session?.user ? await getWatchEntryForMedia(tmdbId, "tv") : null;
 
-  let show;
-  try {
-    show = await getTv(numericId);
-  } catch {
-    notFound();
-  }
+  const cast = show.credits?.cast ?? [];
+  const crew = show.credits?.crew ?? [];
+  const videos = show.videos?.results ?? [];
 
-  const session = await auth();
-  const watchEntry = session?.user ? await getWatchEntryForMedia(numericId, "tv") : null;
-
-  const episodeRuntime =
+  const runtime =
     show.episode_run_time && show.episode_run_time.length > 0 ? show.episode_run_time[0] : null;
-
-  const seasonsLabel =
-    show.number_of_seasons != null
-      ? `${show.number_of_seasons} season${show.number_of_seasons === 1 ? "" : "s"}`
-      : null;
-
-  const episodesLabel =
-    show.number_of_episodes != null
-      ? `${show.number_of_episodes} episode${show.number_of_episodes === 1 ? "" : "s"}`
-      : null;
-
-  const extraMeta = [seasonsLabel, episodesLabel].filter(Boolean).join(" · ") || null;
 
   return (
     <div className='flex min-h-screen flex-col'>
       <AppNavbar user={session?.user ?? null} />
 
-      <main className='flex-1'>
+      <main className='flex-1 pb-16'>
         <MediaHero
           title={show.name}
           tagline={show.tagline}
           overview={show.overview}
           posterPath={show.poster_path}
           backdropPath={show.backdrop_path}
-          releaseDate={show.first_air_date}
-          runtime={episodeRuntime}
+          firstAirDate={show.first_air_date}
+          lastAirDate={show.last_air_date}
+          runtime={runtime}
           voteAverage={show.vote_average}
           voteCount={show.vote_count}
           genres={show.genres}
-          extraMeta={extraMeta}
+          status={show.status}
+          mediaType='tv'
+          numberOfSeasons={show.number_of_seasons}
+          numberOfEpisodes={show.number_of_episodes}
         />
 
         {session?.user ? (
-          <TrackingControls
-            tmdbId={show.id}
-            mediaType='tv'
-            title={show.name}
-            posterPath={show.poster_path}
-            initialStatus={watchEntry?.status ?? null}
-          />
+          <>
+            <TrackingControls
+              tmdbId={tmdbId}
+              mediaType='tv'
+              title={show.name}
+              posterPath={show.poster_path}
+              initialStatus={watchEntry?.status ?? null}
+            />
+            <RatingNotes
+              tmdbId={tmdbId}
+              mediaType='tv'
+              initialRating={watchEntry?.rating ?? null}
+              initialNotes={watchEntry?.notes ?? null}
+              hasStatus={!!watchEntry?.status}
+            />
+          </>
         ) : null}
 
-        <CastSection cast={show.credits?.cast ?? []} />
-        <CrewSection crew={show.credits?.crew ?? []} />
-        <VideosSection videos={show.videos?.results ?? []} />
+        <CastSection cast={cast} />
+        <CrewSection crew={crew} />
+        <VideosSection videos={videos} />
       </main>
     </div>
   );

@@ -9,17 +9,20 @@ type CastSectionProps = {
   cast: CreditPerson[];
 };
 
-export function CastSection({ cast }: CastSectionProps) {
-  if (!cast.length) return null;
+function pickCast(cast: CreditPerson[], limit = 18) {
+  return [...cast].sort((a, b) => (a.order ?? 999) - (b.order ?? 999)).slice(0, limit);
+}
 
-  const topCast = cast.slice(0, 12);
+export function CastSection({ cast }: CastSectionProps) {
+  const top = pickCast(cast);
+  if (!top.length) return null;
 
   return (
     <section className='mx-auto max-w-6xl px-4 py-10 sm:px-6'>
       <h2 className='mb-6 text-xl font-semibold tracking-tight'>Cast</h2>
 
       <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'>
-        {topCast.map((person, i) => {
+        {top.map((person, i) => {
           const img = posterUrl(person.profile_path, "w185");
           return (
             <motion.div
@@ -28,7 +31,7 @@ export function CastSection({ cast }: CastSectionProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{
                 duration: 0.3,
-                delay: i * 0.03,
+                delay: i * 0.02,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >

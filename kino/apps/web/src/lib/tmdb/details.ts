@@ -45,6 +45,16 @@ const externalIdsSchema = z.object({
   twitter_id: z.string().nullable().optional(),
 });
 
+const belongsToCollectionSchema = z
+  .object({
+    id: z.number(),
+    name: z.string(),
+    poster_path: z.string().nullable().optional(),
+    backdrop_path: z.string().nullable().optional(),
+  })
+  .nullable()
+  .optional();
+
 const movieDetailSchema = z.object({
   id: z.number(),
   title: z.string(),
@@ -61,6 +71,7 @@ const movieDetailSchema = z.object({
   status: z.string().optional(),
   budget: z.number().optional(),
   revenue: z.number().optional(),
+  belongs_to_collection: belongsToCollectionSchema,
   credits: creditsSchema.optional(),
   videos: videosSchema.optional(),
   external_ids: externalIdsSchema.optional(),
@@ -129,12 +140,42 @@ const personDetailSchema = z.object({
   external_ids: externalIdsSchema.optional(),
 });
 
+// Collection
+const collectionPartSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  original_title: z.string().optional(),
+  overview: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  backdrop_path: z.string().nullable().optional(),
+  release_date: z.string().nullable().optional(),
+  vote_average: z.number().optional(),
+  vote_count: z.number().optional(),
+  adult: z.boolean().optional(),
+  genre_ids: z.array(z.number()).optional(),
+  popularity: z.number().optional(),
+  video: z.boolean().optional(),
+  media_type: z.literal("movie").optional(),
+});
+
+const collectionDetailSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  overview: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  backdrop_path: z.string().nullable().optional(),
+  parts: z.array(collectionPartSchema).default([]),
+});
+
 export type MovieDetail = z.infer<typeof movieDetailSchema>;
 export type TvDetail = z.infer<typeof tvDetailSchema>;
 export type PersonDetail = z.infer<typeof personDetailSchema>;
 export type PersonCreditItem = z.infer<typeof personCreditItemSchema>;
 export type CreditPerson = z.infer<typeof creditPersonSchema>;
 export type TmdbVideo = z.infer<typeof videoSchema>;
+export type CollectionDetail = z.infer<typeof collectionDetailSchema>;
+export type CollectionPart = z.infer<typeof collectionPartSchema>;
+export type BelongsToCollection = z.infer<typeof belongsToCollectionSchema>;
 
 export async function getMovie(id: number): Promise<MovieDetail> {
   const data = await tmdbFetch({
@@ -173,4 +214,16 @@ export async function getPerson(id: number): Promise<PersonDetail> {
   });
 
   return personDetailSchema.parse(data);
+}
+
+export async function getCollection(id: number): Promise<CollectionDetail> {
+  const data = await tmdbFetch({
+    path: `/collection/${id}`,
+    searchParams: {
+      language: "en-US",
+    },
+    next: { revalidate: 60 * 60 * 12 },
+  });
+
+  return collectionDetailSchema.parse(data);
 }
