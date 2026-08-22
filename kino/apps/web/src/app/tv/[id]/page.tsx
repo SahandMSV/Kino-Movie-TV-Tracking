@@ -7,7 +7,9 @@ import { CrewSection } from "@/components/features/media/crew-section";
 import { VideosSection } from "@/components/features/media/videos-section";
 import { TrackingControls } from "@/components/features/media/tracking-controls";
 import { RatingNotes } from "@/components/features/media/rating-notes";
+import { RecommendationsSection } from "@/components/features/media/recommendations-section";
 import { getTv } from "@/lib/tmdb/details";
+import { getTvRecommendations } from "@/lib/tmdb/discover";
 import { getWatchEntryForMedia } from "@/lib/actions/tracking";
 
 type Props = {
@@ -23,7 +25,10 @@ export default async function TvPage({ params }: Props) {
 
   if (!show) notFound();
 
-  const watchEntry = session?.user ? await getWatchEntryForMedia(tmdbId, "tv") : null;
+  const [watchEntry, recommendations] = await Promise.all([
+    session?.user ? getWatchEntryForMedia(tmdbId, "tv") : null,
+    getTvRecommendations(tmdbId).catch(() => ({ results: [] })),
+  ]);
 
   const cast = show.credits?.cast ?? [];
   const crew = show.credits?.crew ?? [];
@@ -77,6 +82,7 @@ export default async function TvPage({ params }: Props) {
         <CastSection cast={cast} />
         <CrewSection crew={crew} />
         <VideosSection videos={videos} />
+        <RecommendationsSection shows={recommendations.results} />
       </main>
     </div>
   );

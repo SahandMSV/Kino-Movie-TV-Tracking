@@ -55,6 +55,26 @@ const belongsToCollectionSchema = z
   .nullable()
   .optional();
 
+const releaseDateEntrySchema = z.object({
+  iso_3166_1: z.string(),
+  release_dates: z
+    .array(
+      z.object({
+        certification: z.string().optional(),
+        descriptors: z.array(z.string()).optional(),
+        iso_639_1: z.string().optional(),
+        note: z.string().optional(),
+        release_date: z.string(),
+        type: z.number(),
+      }),
+    )
+    .default([]),
+});
+
+const releaseDatesSchema = z.object({
+  results: z.array(releaseDateEntrySchema).default([]),
+});
+
 const movieDetailSchema = z.object({
   id: z.number(),
   title: z.string(),
@@ -75,6 +95,7 @@ const movieDetailSchema = z.object({
   credits: creditsSchema.optional(),
   videos: videosSchema.optional(),
   external_ids: externalIdsSchema.optional(),
+  release_dates: releaseDatesSchema.optional(),
 });
 
 const tvDetailSchema = z.object({
@@ -97,6 +118,7 @@ const tvDetailSchema = z.object({
   credits: creditsSchema.optional(),
   videos: videosSchema.optional(),
   external_ids: externalIdsSchema.optional(),
+  release_dates: releaseDatesSchema.optional(),
 });
 
 const personCreditItemSchema = z.object({
@@ -182,7 +204,7 @@ export async function getMovie(id: number): Promise<MovieDetail> {
     path: `/movie/${id}`,
     searchParams: {
       language: "en-US",
-      append_to_response: "credits,videos,external_ids",
+      append_to_response: "credits,videos,external_ids,release_dates",
     },
     next: { revalidate: 60 * 60 * 6 },
   });

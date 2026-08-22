@@ -8,8 +8,12 @@ import { VideosSection } from "@/components/features/media/videos-section";
 import { TrackingControls } from "@/components/features/media/tracking-controls";
 import { RatingNotes } from "@/components/features/media/rating-notes";
 import { CollectionSection } from "@/components/features/media/collection-section";
+import { RecommendationsSection } from "@/components/features/media/recommendations-section";
+import { ReleaseBadge } from "@/components/features/media/release-badge";
 import { getMovie, getCollection } from "@/lib/tmdb/details";
+import { getMovieRecommendations } from "@/lib/tmdb/discover";
 import { getWatchEntryForMedia } from "@/lib/actions/tracking";
+import { deriveReleaseStatus } from "@/lib/tmdb/release-status";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -24,18 +28,17 @@ export default async function MoviePage({ params }: Props) {
 
   if (!movie) notFound();
 
-  const watchEntry = session?.user ? await getWatchEntryForMedia(tmdbId, "movie") : null;
+  const [watchEntry, recommendations, collectionParts] = await Promise.all([
+    session?.user ? getWatchEntryForMedia(tmdbId, "movie") : null,
+    getMovieRecommendations(tmdbId).catch(() => ({ results: [] })),
+    movie.belongs_to_collection?.id
+      ? getCollection(movie.belongs_to_collection.id)
+          .then(c => c.parts)
+          .catch(() => undefined)
+      : Promise.resolve(undefined),
+  ]);
 
-  // Optionally fetch the full collection so we can show sibling films
-  let collectionParts = undefined;
-  if (movie.belongs_to_collection?.id) {
-    try {
-      const col = await getCollection(movie.belongs_to_collection.id);
-      collectionParts = col.parts;
-    } catch {
-      // non-fatal – section still works without parts
-    }
-  }
+  const release = deriveReleaseStatus(movie.release_dates?.results);
 
   const cast = movie.credits?.cast ?? [];
   const crew = movie.credits?.crew ?? [];
@@ -60,6 +63,10 @@ export default async function MoviePage({ params }: Props) {
           status={movie.status}
           mediaType='movie'
         />
+
+        <div className='mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 pb-4 sm:px-6'>
+          <ReleaseBadge status={release.status} digitalDate={release.digitalDate} />
+        </div>
 
         {session?.user ? (
           <>
@@ -91,6 +98,7 @@ export default async function MoviePage({ params }: Props) {
         <CastSection cast={cast} />
         <CrewSection crew={crew} />
         <VideosSection videos={videos} />
+        <RecommendationsSection movies={recommendations.results} />
       </main>
     </div>
   );
