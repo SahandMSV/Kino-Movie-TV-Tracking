@@ -1,0 +1,85 @@
+{
+  "common": {
+    "register": "Registrieren",
+    "login": "Anmelden",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "view_all": "Alle anzeigen →",
+    "signed_out": "Abgemeldet",
+    "signed_out_desc": "Du wurdest von Kino abgemeldet.",
+    "back": "Zurück",
+    "back_home": "Zur Startseite",
+    "loading": "Lädt…"
+  },
+  "home": {
+    "title": "Kino",
+    "subtitle": "Jede Geschichte, die man sehen sollte, an einem Ort.",
+    "description": "Behalte den Überblick. Entdecke, was als Nächstes kommt.",
+    "welcome_back": "Willkommen zurück, {name}",
+    "welcome_sub": "Mach dort weiter, wo du aufgehört hast, oder entdecke etwas Neues.",
+    "continue_watching": "Weitersehen",
+    "your_watchlist": "Deine Watchlist",
+    "trending": "Trends dieser Woche",
+    "popular_movies": "Beliebte Filme",
+    "popular_tv": "Beliebte Serien",
+    "empty_continue": "Nichts in Bearbeitung. Markiere einen Titel als Watching auf seiner Seite.",
+    "empty_watchlist": "Deine Watchlist ist leer. Füge Titel von ihren Detailseiten hinzu."
+  },
+  "nav": {
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "search": "Suche",
+    "watchlist": "Watchlist",
+    "progress": "Fortschritt",
+    "sign_out": "Abmelden"
+  },
+  "auth": {
+    "welcome_back": "Willkommen zurück",
+    "sign_in_sub": "Melde dich an, um fortzufahren",
+    "email_or_username": "E-Mail / Benutzername",
+    "password": "Passwort",
+    "sign_in": "Anmelden",
+    "signing_in": "Anmeldung…",
+    "forgot_password": "Passwort vergessen",
+    "terms": "Nutzungsbedingungen",
+    "create_account": "Konto erstellen",
+    "create_sub": "Tritt Kino bei und verfolge, was du schaust",
+    "username": "Benutzername",
+    "email": "E-Mail",
+    "confirm_password": "Passwort bestätigen",
+    "sign_up": "Registrieren",
+    "signing_up": "Konto wird erstellt…",
+    "logged_in": "Erfolgreich angemeldet",
+    "logged_in_desc": "Willkommen zurück bei Kino!",
+    "registered": "Konto erstellt",
+    "registered_desc": "Willkommen bei Kino!"
+  },
+  "not_found": {
+    "title": "Seite nicht gefunden",
+    "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "code": "404"
+  },
+  "watchlist": {
+    "title": "Watchlist",
+    "subtitle": "Titel, die du sehen möchtest.",
+    "empty_title": "Deine Watchlist ist leer",
+    "empty_description": "Füge Filme und Serien von ihren Detailseiten hinzu."
+  },
+  "progress": {
+    "title": "Fortschritt",
+    "subtitle": "Was du schaust und was du fertig hast.",
+    "watching": "Am Schauen",
+    "watched": "Gesehen",
+    "empty_watching_title": "Nichts in Bearbeitung",
+    "empty_watching_desc": "Markiere einen Titel als Watching auf seiner Detailseite.",
+    "empty_watched_title": "Noch keine gesehenen Titel",
+    "empty_watched_desc": "Markiere Filme und Serien als Watched, wenn du fertig bist."
+  },
+  "status": {
+    "plan_to_watch": "Watchlist",
+    "watching": "Am Schauen",
+    "watched": "Gesehen",
+    "dropped": "Abgebrochen",
+    "on_hold": "Pausiert"
+  }
+}

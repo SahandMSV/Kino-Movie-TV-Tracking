@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Bookmark, Clapperboard, LogOut, Search } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
+import { useTranslate } from "@tolgee/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -23,14 +24,15 @@ type AppNavbarProps = {
 export function AppNavbar({ user }: AppNavbarProps) {
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
+  const { t } = useTranslate();
 
   const isLoggedIn = !!user;
   const displayName = user?.name ?? user?.username ?? user?.email ?? "Account";
 
   const handleLogout = async () => {
     await signOut({ redirect: false });
-    toast.success("Signed out", {
-      description: "You have been logged out of Kino.",
+    toast.success(t("common.signed_out"), {
+      description: t("common.signed_out_desc"),
     });
     router.refresh();
   };
@@ -38,34 +40,12 @@ export function AppNavbar({ user }: AppNavbarProps) {
   return (
     <>
       <header className='sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl'>
-        <nav className='mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6'>
-          <div className='flex items-center gap-4'>
-            <Link
-              href='/'
-              className='text-lg font-semibold tracking-tight transition-opacity hover:opacity-80'
-            >
-              Kino
-            </Link>
+        <nav className='mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6'>
+          <Link href='/' className='text-sm font-semibold tracking-tight'>
+            Kino
+          </Link>
 
-            {isLoggedIn ? (
-              <div className='hidden items-center gap-1 sm:flex'>
-                <Link
-                  href='/watchlist'
-                  className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-                >
-                  Watchlist
-                </Link>
-                <Link
-                  href='/progress'
-                  className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-                >
-                  Progress
-                </Link>
-              </div>
-            ) : null}
-          </div>
-
-          <div className='flex items-center gap-1'>
+          <div className='flex items-center gap-1.5'>
             <ThemeToggle />
             <LanguageSwitcher />
 
@@ -74,16 +54,15 @@ export function AppNavbar({ user }: AppNavbarProps) {
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='sm:hidden'
                   aria-label='Watchlist'
                   onClick={() => router.push("/watchlist")}
                 >
                   <Bookmark className='size-4' />
                 </Button>
+
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='sm:hidden'
                   aria-label='Progress'
                   onClick={() => router.push("/progress")}
                 >
@@ -110,10 +89,10 @@ export function AppNavbar({ user }: AppNavbarProps) {
             ) : (
               <>
                 <Button variant='ghost' size='sm' onClick={() => router.push("/register")}>
-                  Login
+                  {t("nav.login")}
                 </Button>
                 <Button size='sm' onClick={() => router.push("/register")}>
-                  Register
+                  {t("nav.register")}
                 </Button>
               </>
             )}

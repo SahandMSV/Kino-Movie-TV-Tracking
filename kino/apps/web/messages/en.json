@@ -1,0 +1,85 @@
+{
+  "common": {
+    "register": "Register",
+    "login": "Login",
+    "save": "Save",
+    "cancel": "Cancel",
+    "view_all": "View all →",
+    "signed_out": "Signed out",
+    "signed_out_desc": "You have been logged out of Kino.",
+    "back": "Back",
+    "back_home": "Back home",
+    "loading": "Loading…"
+  },
+  "home": {
+    "title": "Kino",
+    "subtitle": "Every story worth watching, in one place.",
+    "description": "Track what you watch. Discover what's next.",
+    "welcome_back": "Welcome back, {name}",
+    "welcome_sub": "Pick up where you left off or discover something new.",
+    "continue_watching": "Continue Watching",
+    "your_watchlist": "Your Watchlist",
+    "trending": "Trending this week",
+    "popular_movies": "Popular Movies",
+    "popular_tv": "Popular TV",
+    "empty_continue": "Nothing in progress. Mark a title as Watching on its page.",
+    "empty_watchlist": "Your watchlist is empty. Add titles from their detail pages."
+  },
+  "nav": {
+    "login": "Login",
+    "register": "Register",
+    "search": "Search",
+    "watchlist": "Watchlist",
+    "progress": "Progress",
+    "sign_out": "Sign out"
+  },
+  "auth": {
+    "welcome_back": "Welcome back",
+    "sign_in_sub": "Sign in to continue to Kino",
+    "email_or_username": "Email address / Username",
+    "password": "Password",
+    "sign_in": "Sign In",
+    "signing_in": "Signing in…",
+    "forgot_password": "Forgot password",
+    "terms": "Terms of service",
+    "create_account": "Create account",
+    "create_sub": "Join Kino to track what you watch",
+    "username": "Username",
+    "email": "Email",
+    "confirm_password": "Confirm password",
+    "sign_up": "Sign Up",
+    "signing_up": "Creating account…",
+    "logged_in": "Logged in successfully",
+    "logged_in_desc": "Welcome back to Kino!",
+    "registered": "Account created",
+    "registered_desc": "Welcome to Kino!"
+  },
+  "not_found": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "code": "404"
+  },
+  "watchlist": {
+    "title": "Watchlist",
+    "subtitle": "Titles you plan to watch.",
+    "empty_title": "Your watchlist is empty",
+    "empty_description": "Add movies and shows from their detail pages to build your list."
+  },
+  "progress": {
+    "title": "Progress",
+    "subtitle": "What you're watching and what you've finished.",
+    "watching": "Watching",
+    "watched": "Watched",
+    "empty_watching_title": "Nothing in progress",
+    "empty_watching_desc": "Mark a title as Watching on its detail page.",
+    "empty_watched_title": "No watched titles yet",
+    "empty_watched_desc": "Mark movies and shows as Watched when you finish them."
+  },
+  "status": {
+    "plan_to_watch": "Watchlist",
+    "watching": "Watching",
+    "watched": "Watched",
+    "dropped": "Dropped",
+    "on_hold": "On hold"
+  }
+}

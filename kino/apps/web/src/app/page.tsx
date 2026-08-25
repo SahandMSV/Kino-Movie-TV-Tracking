@@ -8,6 +8,7 @@ import { getMovie } from "@/lib/tmdb/details";
 import { deriveReleaseStatus } from "@/lib/tmdb/release-status";
 import { formatYear } from "@/lib/tmdb/format";
 import { Entrance } from "@/components/common/entrance-wrapper";
+import { getTranslate } from "@/tolgee/server";
 
 async function enrichWithReleaseStatus(items: CarouselItem[], limit = 8): Promise<CarouselItem[]> {
   const moviesToEnrich = items.filter(i => i.mediaType === "movie").slice(0, limit);
@@ -41,6 +42,7 @@ async function enrichWithReleaseStatus(items: CarouselItem[], limit = 8): Promis
 
 export default async function HomePage() {
   const session = await auth();
+  const t = await getTranslate();
 
   if (!session?.user) {
     return (
@@ -49,13 +51,11 @@ export default async function HomePage() {
         <main className='relative flex flex-1 items-center justify-center px-6'>
           <Entrance>
             <div className='max-w-md space-y-4 text-center'>
-              <h1 className='text-4xl font-semibold tracking-tight sm:text-5xl'>Kino</h1>
-              <p className='text-lg text-muted-foreground'>
-                Every story worth watching, in one place.
-              </p>
-              <p className='text-sm text-muted-foreground'>
-                Track what you watch. Discover what’s next.
-              </p>
+              <h1 className='text-4xl font-semibold tracking-tight sm:text-5xl'>
+                {t("home.title")}
+              </h1>
+              <p className='text-lg text-muted-foreground'>{t("home.subtitle")}</p>
+              <p className='text-sm text-muted-foreground'>{t("home.description")}</p>
             </div>
           </Entrance>
         </main>
@@ -130,6 +130,8 @@ export default async function HomePage() {
     enrichWithReleaseStatus(popularMovieItems, 8),
   ]);
 
+  const name = session.user.name ?? session.user.username ?? "";
+
   return (
     <div className='flex min-h-screen flex-col'>
       <AppNavbar user={session.user} />
@@ -138,32 +140,30 @@ export default async function HomePage() {
         <div className='mx-auto max-w-6xl space-y-12'>
           <div className='px-4 sm:px-6'>
             <h1 className='text-2xl font-semibold tracking-tight sm:text-3xl'>
-              Welcome back, {session.user.name ?? session.user.username}
+              {t("home.welcome_back", { name })}
             </h1>
-            <p className='mt-1 text-sm text-muted-foreground'>
-              Pick up where you left off or discover something new.
-            </p>
+            <p className='mt-1 text-sm text-muted-foreground'>{t("home.welcome_sub")}</p>
           </div>
 
           <PosterCarousel
-            title='Continue Watching'
+            title={t("home.continue_watching")}
             items={continueWatching}
             href='/progress'
-            emptyMessage='Nothing in progress. Mark a title as Watching on its page.'
+            emptyMessage={t("home.empty_continue")}
           />
 
           <PosterCarousel
-            title='Your Watchlist'
+            title={t("home.your_watchlist")}
             items={watchlistItems}
             href='/watchlist'
-            emptyMessage='Your watchlist is empty. Add titles from their detail pages.'
+            emptyMessage={t("home.empty_watchlist")}
           />
 
-          <PosterCarousel title='Trending this week' items={trendingItems} />
+          <PosterCarousel title={t("home.trending")} items={trendingItems} />
 
-          <PosterCarousel title='Popular Movies' items={popularMovieItems} />
+          <PosterCarousel title={t("home.popular_movies")} items={popularMovieItems} />
 
-          <PosterCarousel title='Popular TV' items={popularTvItems} />
+          <PosterCarousel title={t("home.popular_tv")} items={popularTvItems} />
         </div>
       </main>
     </div>

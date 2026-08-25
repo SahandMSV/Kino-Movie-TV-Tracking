@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useTranslate } from "@tolgee/react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -15,13 +16,15 @@ type NotFoundViewProps = {
 };
 
 export function NotFoundView({
-  title = "Page not found",
-  description = "The page you’re looking for doesn’t exist or has been moved.",
+  title,
+  description,
   primaryHref = "/",
-  primaryLabel = "Back home",
+  primaryLabel,
   secondaryHref,
   secondaryLabel,
 }: NotFoundViewProps) {
+  const { t } = useTranslate();
+
   return (
     <div className='flex min-h-[70vh] flex-col items-center justify-center px-6'>
       <motion.div
@@ -31,9 +34,13 @@ export function NotFoundView({
         className='mx-auto max-w-md space-y-6 text-center'
       >
         <div className='space-y-3'>
-          <p className='text-sm font-medium tracking-widest text-muted-foreground uppercase'>404</p>
-          <h1 className='text-3xl font-semibold tracking-tight sm:text-4xl'>{title}</h1>
-          <p className='text-muted-foreground'>{description}</p>
+          <p className='text-sm font-medium tracking-widest text-muted-foreground uppercase'>
+            {t("not_found.code")}
+          </p>
+          <h1 className='text-3xl font-semibold tracking-tight sm:text-4xl'>
+            {title ?? t("not_found.title")}
+          </h1>
+          <p className='text-muted-foreground'>{description ?? t("not_found.description")}</p>
         </div>
 
         <div className='flex flex-col items-center justify-center gap-3 sm:flex-row'>
@@ -41,7 +48,7 @@ export function NotFoundView({
             href={primaryHref}
             className={cn(buttonVariants({ variant: "default", size: "default" }))}
           >
-            {primaryLabel}
+            {primaryLabel ?? t("common.back_home")}
           </Link>
 
           {secondaryHref && secondaryLabel ? (

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useTranslation } from "@/hooks/use-translation";
+import { useTranslate } from "@tolgee/react";
 
 type HomePanelProps = {
   onLogin: () => void;
@@ -9,7 +9,7 @@ type HomePanelProps = {
 };
 
 export function HomePanel({ onLogin, onRegister }: HomePanelProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   return (
     <div className='flex h-full w-full flex-col items-center justify-center text-center'>

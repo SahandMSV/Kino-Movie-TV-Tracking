@@ -9,7 +9,6 @@ import { TrackingControls } from "@/components/features/media/tracking-controls"
 import { RatingNotes } from "@/components/features/media/rating-notes";
 import { CollectionSection } from "@/components/features/media/collection-section";
 import { RecommendationsSection } from "@/components/features/media/recommendations-section";
-import { ReleaseBadge } from "@/components/features/media/release-badge";
 import { getMovie, getCollection } from "@/lib/tmdb/details";
 import { getMovieRecommendations } from "@/lib/tmdb/discover";
 import { getWatchEntryForMedia } from "@/lib/actions/tracking";
@@ -63,10 +62,6 @@ export default async function MoviePage({ params }: Props) {
           status={movie.status}
           mediaType='movie'
         />
-
-        <div className='mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 pb-4 sm:px-6'>
-          <ReleaseBadge status={release.status} digitalDate={release.digitalDate} />
-        </div>
 
         {session?.user ? (
           <>

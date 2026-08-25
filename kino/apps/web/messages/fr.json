@@ -1,0 +1,85 @@
+{
+  "common": {
+    "register": "S'inscrire",
+    "login": "Se connecter",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "view_all": "Tout voir →",
+    "signed_out": "Déconnecté",
+    "signed_out_desc": "Vous avez été déconnecté de Kino.",
+    "back": "Retour",
+    "back_home": "Retour à l'accueil",
+    "loading": "Chargement…"
+  },
+  "home": {
+    "title": "Kino",
+    "subtitle": "Toutes les histoires qui valent la peine, au même endroit.",
+    "description": "Suivez ce que vous regardez. Découvrez la suite.",
+    "welcome_back": "Bon retour, {name}",
+    "welcome_sub": "Reprenez où vous en étiez ou découvrez quelque chose de nouveau.",
+    "continue_watching": "Continuer à regarder",
+    "your_watchlist": "Votre liste",
+    "trending": "Tendances de la semaine",
+    "popular_movies": "Films populaires",
+    "popular_tv": "Séries populaires",
+    "empty_continue": "Rien en cours. Marquez un titre comme Watching sur sa page.",
+    "empty_watchlist": "Votre liste est vide. Ajoutez des titres depuis leurs pages."
+  },
+  "nav": {
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "search": "Recherche",
+    "watchlist": "Liste",
+    "progress": "Progression",
+    "sign_out": "Se déconnecter"
+  },
+  "auth": {
+    "welcome_back": "Bon retour",
+    "sign_in_sub": "Connectez-vous pour continuer sur Kino",
+    "email_or_username": "E-mail / Nom d'utilisateur",
+    "password": "Mot de passe",
+    "sign_in": "Se connecter",
+    "signing_in": "Connexion…",
+    "forgot_password": "Mot de passe oublié",
+    "terms": "Conditions d'utilisation",
+    "create_account": "Créer un compte",
+    "create_sub": "Rejoignez Kino pour suivre ce que vous regardez",
+    "username": "Nom d'utilisateur",
+    "email": "E-mail",
+    "confirm_password": "Confirmer le mot de passe",
+    "sign_up": "S'inscrire",
+    "signing_up": "Création du compte…",
+    "logged_in": "Connexion réussie",
+    "logged_in_desc": "Bon retour sur Kino !",
+    "registered": "Compte créé",
+    "registered_desc": "Bienvenue sur Kino !"
+  },
+  "not_found": {
+    "title": "Page introuvable",
+    "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "code": "404"
+  },
+  "watchlist": {
+    "title": "Liste",
+    "subtitle": "Titres que vous prévoyez de regarder.",
+    "empty_title": "Votre liste est vide",
+    "empty_description": "Ajoutez des films et séries depuis leurs pages de détail."
+  },
+  "progress": {
+    "title": "Progression",
+    "subtitle": "Ce que vous regardez et ce que vous avez terminé.",
+    "watching": "En cours",
+    "watched": "Vu",
+    "empty_watching_title": "Rien en cours",
+    "empty_watching_desc": "Marquez un titre comme Watching sur sa page de détail.",
+    "empty_watched_title": "Aucun titre vu pour l'instant",
+    "empty_watched_desc": "Marquez les films et séries comme Watched quand vous les terminez."
+  },
+  "status": {
+    "plan_to_watch": "Liste",
+    "watching": "En cours",
+    "watched": "Vu",
+    "dropped": "Abandonné",
+    "on_hold": "En pause"
+  }
+}

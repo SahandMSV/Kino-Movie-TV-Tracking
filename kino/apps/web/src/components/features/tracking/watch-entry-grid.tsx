@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useTranslate } from "@tolgee/react";
 import { posterUrl } from "@/lib/tmdb/config";
 import type { WatchStatus } from "@/lib/db/models/watch-entry";
 
@@ -22,15 +23,9 @@ type WatchEntryGridProps = {
   emptyDescription: string;
 };
 
-const STATUS_LABEL: Record<WatchStatus, string> = {
-  plan_to_watch: "Watchlist",
-  watching: "Watching",
-  watched: "Watched",
-  dropped: "Dropped",
-  on_hold: "On hold",
-};
-
 export function WatchEntryGrid({ entries, emptyTitle, emptyDescription }: WatchEntryGridProps) {
+  const { t } = useTranslate();
+
   if (!entries.length) {
     return (
       <div className='mx-auto flex max-w-6xl flex-col items-center justify-center px-4 py-24 text-center sm:px-6'>
@@ -80,7 +75,7 @@ export function WatchEntryGrid({ entries, emptyTitle, emptyDescription }: WatchE
                 <p className='truncate text-xs text-muted-foreground'>
                   <span className='capitalize'>{entry.mediaType}</span>
                   {" · "}
-                  {STATUS_LABEL[entry.status]}
+                  {t(`status.${entry.status}`)}
                 </p>
               </div>
             </Link>

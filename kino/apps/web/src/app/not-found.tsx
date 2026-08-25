@@ -6,15 +6,10 @@ export default async function GlobalNotFound() {
   const session = await auth();
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className='flex min-h-screen flex-col'>
       <AppNavbar user={session?.user ?? null} />
-      <main className="flex-1">
-        <NotFoundView
-          title="Page not found"
-          description="The page you’re looking for doesn’t exist or has been moved."
-          primaryHref="/"
-          primaryLabel="Back home"
-        />
+      <main className='flex-1'>
+        <NotFoundView />
       </main>
     </div>
   );

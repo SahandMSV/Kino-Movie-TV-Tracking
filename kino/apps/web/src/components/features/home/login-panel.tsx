@@ -1,8 +1,8 @@
-// src/components/features/home/login-panel.tsx
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslate } from "@tolgee/react";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { ChevronLeft, Mail, Lock } from "lucide-react";
@@ -17,38 +17,38 @@ const initialState: LoginState = {};
 
 export function LoginPanel({ onBack }: LoginPanelProps) {
   const router = useRouter();
+  const { t } = useTranslate();
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
-
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
 
   useEffect(() => {
     if (state.success) {
-      toast.success("Logged in successfully", {
-        description: "Welcome back to Kino!",
+      toast.success(t("auth.logged_in"), {
+        description: t("auth.logged_in_desc"),
       });
       setEmailOrUsername("");
       setPassword("");
-      router.push("/"); // ← go to root with updated navbar
+      router.push("/");
       router.refresh();
     } else if (state.error) {
       toast.error(state.error);
     }
-  }, [state, router]);
+  }, [state, router, t]);
 
   return (
     <div className='relative flex h-full w-full flex-col'>
       <div className='flex flex-1 flex-col items-center justify-center'>
         <div className='w-full'>
-          <Button variant='ghost' onClick={onBack} aria-label='Go back'>
+          <Button variant='ghost' onClick={onBack} aria-label={t("common.back")}>
             <ChevronLeft className='size-4' data-icon='inline-start' />
-            Back
+            {t("common.back")}
           </Button>
         </div>
 
         <div className='mt-4 mb-8 space-y-3 text-center'>
-          <h2 className='text-4xl font-semibold tracking-tight'>Welcome back</h2>
-          <p className='text-muted-foreground'>Sign in to continue to Kino</p>
+          <h2 className='text-4xl font-semibold tracking-tight'>{t("auth.welcome_back")}</h2>
+          <p className='text-muted-foreground'>{t("auth.sign_in_sub")}</p>
         </div>
 
         <form action={formAction} className='w-full max-w-xs space-y-5'>
@@ -59,7 +59,7 @@ export function LoginPanel({ onBack }: LoginPanelProps) {
             <InputGroupInput
               name='emailOrUsername'
               type='text'
-              placeholder='Email address / Username'
+              placeholder={t("auth.email_or_username")}
               required
               autoComplete='username'
               disabled={isPending}
@@ -75,7 +75,7 @@ export function LoginPanel({ onBack }: LoginPanelProps) {
             <InputGroupInput
               name='password'
               type='password'
-              placeholder='Password'
+              placeholder={t("auth.password")}
               required
               autoComplete='current-password'
               disabled={isPending}
@@ -85,16 +85,16 @@ export function LoginPanel({ onBack }: LoginPanelProps) {
           </InputGroup>
 
           <Button type='submit' className='w-full' size='default' disabled={isPending}>
-            {isPending ? "Signing in…" : "Sign In"}
+            {isPending ? t("auth.signing_in") : t("auth.sign_in")}
           </Button>
 
           <div className='flex flex-1 items-center justify-center'>
             <Button variant='link' size='sm' type='button'>
-              Forgot password
+              {t("auth.forgot_password")}
             </Button>
             <span className='px-3'> • </span>
             <Button variant='link' size='sm' type='button'>
-              Terms of service
+              {t("auth.terms")}
             </Button>
           </div>
         </form>
