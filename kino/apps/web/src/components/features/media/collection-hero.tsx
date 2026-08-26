@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { backdropUrl, posterUrl } from "@/lib/tmdb/config";
+import { MediaImage } from "@/components/common/media-image";
 
 type CollectionHeroProps = {
   name: string;
@@ -25,8 +26,14 @@ export function CollectionHero({
     <section className='relative w-full overflow-hidden'>
       <div className='absolute inset-0 -z-10'>
         {backdrop ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={backdrop} alt='' className='h-full w-full object-cover object-top opacity-40' />
+          <MediaImage
+            src={backdrop}
+            alt=''
+            variant='backdrop'
+            priority
+            className='opacity-40'
+            imgClassName='object-top'
+          />
         ) : (
           <div className='h-full w-full bg-muted' />
         )}
@@ -41,14 +48,7 @@ export function CollectionHero({
           className='mx-auto w-48 shrink-0 sm:w-56 lg:mx-0 lg:w-64'
         >
           <div className='relative aspect-2/3 overflow-hidden rounded-xl border border-border/60 bg-muted shadow-2xl'>
-            {poster ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={poster} alt={name} className='h-full w-full object-cover' />
-            ) : (
-              <div className='flex h-full items-center justify-center text-muted-foreground'>
-                No poster
-              </div>
-            )}
+            <MediaImage src={poster} alt={name} variant='poster' priority />
           </div>
         </motion.div>
 
@@ -66,7 +66,7 @@ export function CollectionHero({
               {name}
             </h1>
             <p className='text-sm text-muted-foreground'>
-              {partCount} film{partCount === 1 ? "" : "s"}
+              {partCount} {partCount === 1 ? "film" : "films"}
             </p>
           </div>
 

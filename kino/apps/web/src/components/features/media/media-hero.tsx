@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { backdropUrl, posterUrl } from "@/lib/tmdb/config";
 import { formatRuntime, formatVote, formatYear } from "@/lib/tmdb/format";
+import { MediaImage } from "@/components/common/media-image";
 
 type MediaHeroProps = {
   title: string;
@@ -17,7 +18,6 @@ type MediaHeroProps = {
   genres?: { id: number; name: string }[];
   status?: string | null;
   mediaType: "movie" | "tv";
-  // TV-only extras
   numberOfSeasons?: number | null;
   numberOfEpisodes?: number | null;
   firstAirDate?: string | null;
@@ -61,11 +61,16 @@ export function MediaHero({
 
   return (
     <section className='relative w-full overflow-hidden'>
-      {/* Backdrop */}
       <div className='absolute inset-0 -z-10'>
         {backdrop ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={backdrop} alt='' className='h-full w-full object-cover object-top opacity-40' />
+          <MediaImage
+            src={backdrop}
+            alt=''
+            variant='backdrop'
+            priority
+            className='opacity-40'
+            imgClassName='object-top'
+          />
         ) : (
           <div className='h-full w-full bg-muted' />
         )}
@@ -73,7 +78,6 @@ export function MediaHero({
       </div>
 
       <div className='mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-10 pt-10 sm:px-6 sm:pt-14 lg:flex-row lg:items-start lg:gap-12'>
-        {/* Poster */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -81,18 +85,10 @@ export function MediaHero({
           className='mx-auto w-48 shrink-0 sm:w-56 lg:mx-0 lg:w-64'
         >
           <div className='relative aspect-2/3 overflow-hidden rounded-xl border border-border/60 bg-muted shadow-2xl'>
-            {poster ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={poster} alt={title} className='h-full w-full object-cover' />
-            ) : (
-              <div className='flex h-full items-center justify-center text-muted-foreground'>
-                No poster
-              </div>
-            )}
+            <MediaImage src={poster} alt={title} variant='poster' priority />
           </div>
         </motion.div>
 
-        {/* Info */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -108,7 +104,6 @@ export function MediaHero({
             ) : null}
           </div>
 
-          {/* Meta row */}
           {meta.length > 0 && (
             <div className='flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground lg:justify-start'>
               {meta.map((item, i) => (
@@ -120,7 +115,6 @@ export function MediaHero({
             </div>
           )}
 
-          {/* Genres */}
           {genres.length > 0 && (
             <div className='flex flex-wrap justify-center gap-2 lg:justify-start'>
               {genres.map(g => (
@@ -134,7 +128,6 @@ export function MediaHero({
             </div>
           )}
 
-          {/* Rating */}
           {voteLabel && (
             <div className='flex items-center justify-center gap-2 text-sm lg:justify-start'>
               <span className='font-semibold tabular-nums text-foreground'>{voteLabel}</span>
@@ -145,7 +138,6 @@ export function MediaHero({
             </div>
           )}
 
-          {/* Overview */}
           {overview ? (
             <p className='mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0'>
               {overview}

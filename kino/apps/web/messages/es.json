@@ -4,7 +4,7 @@
     "login": "Iniciar sesión",
     "save": "Guardar",
     "cancel": "Cancelar",
-    "view_all": "Ver todo →",
+    "view_all": "Ver todo",
     "signed_out": "Sesión cerrada",
     "signed_out_desc": "Has cerrado sesión en Kino.",
     "back": "Atrás",
@@ -81,5 +81,9 @@
     "watched": "Visto",
     "dropped": "Abandonado",
     "on_hold": "En pausa"
+  },
+  "collection": {
+    "part_of": "Parte de la colección",
+    "view_full": "Ver colección completa"
   }
 }

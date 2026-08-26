@@ -1,4 +1,7 @@
+import "server-only";
+
 import { tmdbFetch } from "./client";
+import { resolveTmdbLanguage } from "./locale";
 import {
   tmdbPaginatedSchema,
   tmdbMultiSearchResultSchema,
@@ -17,15 +20,16 @@ export async function searchMulti(query: string, page = 1) {
     };
   }
 
+  const language = await resolveTmdbLanguage();
   const data = await tmdbFetch({
     path: "/search/multi",
     searchParams: {
       query: query.trim(),
       page,
       include_adult: false,
-      language: "en-US", // User language preference later
+      language,
     },
-    next: { revalidate: 60 * 30 }, // 30 min
+    next: { revalidate: 60 * 30 },
   });
 
   return multiSearchResponseSchema.parse(data);

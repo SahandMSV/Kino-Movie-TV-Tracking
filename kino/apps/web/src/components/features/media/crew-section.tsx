@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { posterUrl } from "@/lib/tmdb/config";
+import { MediaImage } from "@/components/common/media-image";
 import type { CreditPerson } from "@/lib/tmdb/details";
 
 type CrewSectionProps = {
@@ -28,7 +29,6 @@ function pickCrew(crew: CreditPerson[], limit = 12) {
     return { ...c, _score: idx === -1 ? 100 : idx };
   });
 
-  // Deduplicate by person + job
   const seen = new Set<string>();
   const unique = scored.filter(c => {
     const key = `${c.id}-${c.job}`;
@@ -67,18 +67,12 @@ export function CrewSection({ crew }: CrewSectionProps) {
                 className='group flex flex-col gap-2 transition-opacity hover:opacity-90'
               >
                 <div className='relative aspect-2/3 overflow-hidden rounded-lg border border-border/50 bg-muted'>
-                  {img ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={img}
-                      alt={person.name}
-                      className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
-                    />
-                  ) : (
-                    <div className='flex h-full items-center justify-center text-xs text-muted-foreground'>
-                      —
-                    </div>
-                  )}
+                  <MediaImage
+                    src={img}
+                    alt={person.name}
+                    variant='profile'
+                    imgClassName='transition-transform duration-300 group-hover:scale-105'
+                  />
                 </div>
                 <div className='min-w-0 space-y-0.5'>
                   <p className='truncate text-sm font-medium'>{person.name}</p>

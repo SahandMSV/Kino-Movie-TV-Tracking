@@ -4,7 +4,7 @@
     "login": "Login",
     "save": "Save",
     "cancel": "Cancel",
-    "view_all": "View all →",
+    "view_all": "View all",
     "signed_out": "Signed out",
     "signed_out_desc": "You have been logged out of Kino.",
     "back": "Back",
@@ -81,5 +81,9 @@
     "watched": "Watched",
     "dropped": "Dropped",
     "on_hold": "On hold"
+  },
+  "collection": {
+    "part_of": "Part of the collection",
+    "view_full": "View full collection"
   }
 }

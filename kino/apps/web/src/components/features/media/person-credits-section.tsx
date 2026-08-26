@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { posterUrl } from "@/lib/tmdb/config";
 import { formatYear } from "@/lib/tmdb/format";
+import { MediaImage } from "@/components/common/media-image";
 import type { PersonCreditItem } from "@/lib/tmdb/details";
 
 type PersonCreditsSectionProps = {
@@ -72,18 +73,12 @@ function CreditGrid({ title, items }: { title: string; items: PersonCreditItem[]
                 className='group flex flex-col gap-2 transition-opacity hover:opacity-90'
               >
                 <div className='relative aspect-2/3 overflow-hidden rounded-lg border border-border/50 bg-muted'>
-                  {img ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={img}
-                      alt={creditTitle(item)}
-                      className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
-                    />
-                  ) : (
-                    <div className='flex h-full items-center justify-center text-xs text-muted-foreground'>
-                      —
-                    </div>
-                  )}
+                  <MediaImage
+                    src={img}
+                    alt={creditTitle(item)}
+                    variant='poster'
+                    imgClassName='transition-transform duration-300 group-hover:scale-105'
+                  />
                 </div>
                 <div className='min-w-0 space-y-0.5'>
                   <p className='truncate text-sm font-medium'>{creditTitle(item)}</p>
@@ -103,15 +98,13 @@ function CreditGrid({ title, items }: { title: string; items: PersonCreditItem[]
 }
 
 export function PersonCreditsSection({ cast, crew }: PersonCreditsSectionProps) {
-  const topCast = pickCredits(cast, 24);
-  const topCrew = pickCredits(crew, 18);
-
-  if (!topCast.length && !topCrew.length) return null;
+  const castItems = pickCredits(cast);
+  const crewItems = pickCredits(crew);
 
   return (
     <>
-      <CreditGrid title='Acting' items={topCast} />
-      <CreditGrid title='Crew' items={topCrew} />
+      <CreditGrid title='Acting' items={castItems} />
+      <CreditGrid title='Crew' items={crewItems} />
     </>
   );
 }

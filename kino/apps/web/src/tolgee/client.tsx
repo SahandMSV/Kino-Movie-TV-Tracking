@@ -1,16 +1,11 @@
 "use client";
 
 import { TolgeeProvider, type TolgeeStaticData } from "@tolgee/react";
-import { DevTools } from "@tolgee/web";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { TolgeeBase } from "./shared";
 
-const base = TolgeeBase();
-if (process.env.NEXT_PUBLIC_TOLGEE_API_KEY) {
-  base.use(DevTools());
-}
-const tolgee = base.init();
+const tolgee = TolgeeBase().init();
 
 type Props = {
   language: string;

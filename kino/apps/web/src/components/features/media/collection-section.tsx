@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslate } from "@tolgee/react";
+import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { posterUrl } from "@/lib/tmdb/config";
 import { formatYear } from "@/lib/tmdb/format";
+import { MediaImage } from "@/components/common/media-image";
 import type { BelongsToCollection, CollectionPart } from "@/lib/tmdb/details";
 
 type CollectionSectionProps = {
   collection: NonNullable<BelongsToCollection>;
-  /** Optional: pre-fetched parts so we can show a few siblings without an extra round-trip */
   parts?: CollectionPart[];
   currentMovieId?: number;
 };
@@ -18,7 +20,8 @@ export function CollectionSection({
   parts = [],
   currentMovieId,
 }: CollectionSectionProps) {
-  // Show up to 6 other parts (exclude current movie)
+  const { t } = useTranslate();
+
   const siblings = parts
     .filter(p => p.id !== currentMovieId)
     .sort((a, b) => {
@@ -32,7 +35,9 @@ export function CollectionSection({
     <section className='mx-auto max-w-6xl px-4 py-10 sm:px-6'>
       <div className='mb-6 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between'>
         <div>
-          <p className='text-sm font-medium text-muted-foreground'>Part of the collection</p>
+          <p className='text-sm font-medium text-muted-foreground'>
+            {t("collection.part_of", { noWrap: true })}
+          </p>
           <h2 className='text-xl font-semibold tracking-tight'>
             <Link
               href={`/collection/${collection.id}`}
@@ -44,9 +49,10 @@ export function CollectionSection({
         </div>
         <Link
           href={`/collection/${collection.id}`}
-          className='text-sm text-muted-foreground hover:text-foreground transition-colors'
+          className='flex justify-center items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors'
         >
-          View full collection →
+          {t("collection.view_full", { noWrap: true })}
+          <ArrowRight className='size-3.5' />
         </Link>
       </div>
 
@@ -72,18 +78,12 @@ export function CollectionSection({
                   className='group flex flex-col gap-2 transition-opacity hover:opacity-90'
                 >
                   <div className='relative aspect-2/3 overflow-hidden rounded-lg border border-border/50 bg-muted'>
-                    {img ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={img}
-                        alt={part.title}
-                        className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
-                      />
-                    ) : (
-                      <div className='flex h-full items-center justify-center text-xs text-muted-foreground'>
-                        —
-                      </div>
-                    )}
+                    <MediaImage
+                      src={img}
+                      alt={part.title}
+                      variant='poster'
+                      imgClassName='transition-transform duration-300 group-hover:scale-105'
+                    />
                   </div>
                   <div className='min-w-0 space-y-0.5'>
                     <p className='truncate text-sm font-medium'>{part.title}</p>

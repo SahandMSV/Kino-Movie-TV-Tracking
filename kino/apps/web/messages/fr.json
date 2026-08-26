@@ -4,7 +4,7 @@
     "login": "Se connecter",
     "save": "Enregistrer",
     "cancel": "Annuler",
-    "view_all": "Tout voir →",
+    "view_all": "Tout voir",
     "signed_out": "Déconnecté",
     "signed_out_desc": "Vous avez été déconnecté de Kino.",
     "back": "Retour",
@@ -81,5 +81,9 @@
     "watched": "Vu",
     "dropped": "Abandonné",
     "on_hold": "En pause"
+  },
+  "collection": {
+    "part_of": "Fait partie de la collection",
+    "view_full": "Voir toute la collection"
   }
 }

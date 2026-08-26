@@ -1,6 +1,7 @@
 import "server-only";
 
 import { tmdbFetch } from "./client";
+import { resolveTmdbLanguage } from "./locale";
 import {
   tmdbPaginatedSchema,
   tmdbMovieListItemSchema,
@@ -26,45 +27,50 @@ export async function getTrending(
   mediaType: "all" | "movie" | "tv" = "all",
   timeWindow: "day" | "week" = "week",
 ) {
+  const language = await resolveTmdbLanguage();
   const data = await tmdbFetch({
     path: `/trending/${mediaType}/${timeWindow}`,
-    searchParams: { language: "en-US" },
+    searchParams: { language },
     next: { revalidate: 60 * 60 },
   });
   return trendingResponseSchema.parse(data);
 }
 
 export async function getPopularMovies(page = 1) {
+  const language = await resolveTmdbLanguage();
   const data = await tmdbFetch({
     path: "/movie/popular",
-    searchParams: { language: "en-US", page },
+    searchParams: { language, page },
     next: { revalidate: 60 * 60 * 6 },
   });
   return movieListResponse.parse(data);
 }
 
 export async function getPopularTv(page = 1) {
+  const language = await resolveTmdbLanguage();
   const data = await tmdbFetch({
     path: "/tv/popular",
-    searchParams: { language: "en-US", page },
+    searchParams: { language, page },
     next: { revalidate: 60 * 60 * 6 },
   });
   return tvListResponse.parse(data);
 }
 
 export async function getMovieRecommendations(id: number, page = 1) {
+  const language = await resolveTmdbLanguage();
   const data = await tmdbFetch({
     path: `/movie/${id}/recommendations`,
-    searchParams: { language: "en-US", page },
+    searchParams: { language, page },
     next: { revalidate: 60 * 60 * 12 },
   });
   return movieListResponse.parse(data);
 }
 
 export async function getTvRecommendations(id: number, page = 1) {
+  const language = await resolveTmdbLanguage();
   const data = await tmdbFetch({
     path: `/tv/${id}/recommendations`,
-    searchParams: { language: "en-US", page },
+    searchParams: { language, page },
     next: { revalidate: 60 * 60 * 12 },
   });
   return tvListResponse.parse(data);

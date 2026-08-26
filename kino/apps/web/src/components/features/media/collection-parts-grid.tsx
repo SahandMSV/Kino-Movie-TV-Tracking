@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { posterUrl } from "@/lib/tmdb/config";
 import { formatYear, formatVote } from "@/lib/tmdb/format";
+import { MediaImage } from "@/components/common/media-image";
 import type { CollectionPart } from "@/lib/tmdb/details";
 
 type CollectionPartsGridProps = {
@@ -11,7 +12,6 @@ type CollectionPartsGridProps = {
 };
 
 export function CollectionPartsGrid({ parts }: CollectionPartsGridProps) {
-  // Chronological order
   const ordered = [...parts].sort((a, b) => {
     const da = a.release_date ?? "9999";
     const db = b.release_date ?? "9999";
@@ -53,18 +53,12 @@ export function CollectionPartsGrid({ parts }: CollectionPartsGridProps) {
               className='group flex flex-col gap-2 transition-opacity hover:opacity-90'
             >
               <div className='relative aspect-2/3 overflow-hidden rounded-lg border border-border/50 bg-muted'>
-                {img ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={img}
-                    alt={part.title}
-                    className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
-                  />
-                ) : (
-                  <div className='flex h-full items-center justify-center text-xs text-muted-foreground'>
-                    —
-                  </div>
-                )}
+                <MediaImage
+                  src={img}
+                  alt={part.title}
+                  variant='poster'
+                  imgClassName='transition-transform duration-300 group-hover:scale-105'
+                />
               </div>
               <div className='min-w-0 space-y-0.5'>
                 <p className='truncate text-sm font-medium'>{part.title}</p>

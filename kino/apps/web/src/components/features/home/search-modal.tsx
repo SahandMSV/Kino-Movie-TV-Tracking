@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { searchAction } from "@/lib/actions/search";
 import { posterUrl } from "@/lib/tmdb/config";
+import { MediaImage } from "@/components/common/media-image";
 import type { TmdbMultiSearchResult } from "@/lib/tmdb/schemas";
 
 type SearchModalProps = {
@@ -16,16 +17,15 @@ type SearchModalProps = {
 };
 
 export function SearchModal({ open, onOpenChange }: SearchModalProps) {
-  const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<TmdbMultiSearchResult[]>([]);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (open) {
-      const t = setTimeout(() => inputRef.current?.focus(), 50);
-      return () => clearTimeout(t);
+      setTimeout(() => inputRef.current?.focus(), 50);
     } else {
       setQuery("");
       setResults([]);
@@ -33,40 +33,33 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
   }, [open]);
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onOpenChange(false);
-    };
-    if (open) window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, onOpenChange]);
-
-  const handleSearch = (value: string) => {
-    setQuery(value);
-    if (!value.trim()) {
+    if (!query.trim()) {
       setResults([]);
       return;
     }
 
-    startTransition(async () => {
-      const formData = new FormData();
-      formData.set("query", value);
-      const res = await searchAction(formData);
-      if (res.success && res.data) {
-        setResults(res.data.results.slice(0, 8));
-      }
-    });
-  };
+    const handle = setTimeout(() => {
+      startTransition(async () => {
+        const formData = new FormData();
+        formData.set("query", query.trim());
+        formData.set("page", "1");
+        const res = await searchAction(formData);
+        if (res.success && res.data) {
+          setResults(res.data.results.slice(0, 12));
+        } else {
+          setResults([]);
+        }
+      });
+    }, 280);
+
+    return () => clearTimeout(handle);
+  }, [query]);
 
   const handleSelect = (item: TmdbMultiSearchResult) => {
     onOpenChange(false);
-
-    if (item.media_type === "movie") {
-      router.push(`/movie/${item.id}`);
-    } else if (item.media_type === "tv") {
-      router.push(`/tv/${item.id}`);
-    } else if (item.media_type === "person") {
-      router.push(`/person/${item.id}`);
-    }
+    if (item.media_type === "movie") router.push(`/movie/${item.id}`);
+    else if (item.media_type === "tv") router.push(`/tv/${item.id}`);
+    else if (item.media_type === "person") router.push(`/person/${item.id}`);
   };
 
   return (
@@ -77,36 +70,31 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            className='fixed inset-0 z-50 bg-black/40 backdrop-blur-sm'
+            transition={{ duration: 0.15 }}
+            className='fixed inset-0 z-50 bg-background/60 backdrop-blur-sm'
             onClick={() => onOpenChange(false)}
           />
 
           <motion.div
-            role='dialog'
-            aria-modal='true'
-            aria-label='Search'
-            initial={{ opacity: 0, y: -12, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className='fixed left-1/2 top-[12%] z-50 w-full max-w-xl -translate-x-1/2 px-4'
+            className='fixed left-1/2 top-[12%] z-50 w-full max-w-lg -translate-x-1/2 px-4'
           >
-            <div className='overflow-hidden rounded-xl border border-border bg-popover shadow-2xl'>
-              <div className='flex items-center gap-2 border-b border-border px-3'>
+            <div className='overflow-hidden rounded-xl border border-border/60 bg-card shadow-2xl'>
+              <div className='flex items-center gap-2 border-b border-border/50 px-3 py-2'>
                 <Search className='size-4 shrink-0 text-muted-foreground' />
                 <Input
                   ref={inputRef}
                   value={query}
-                  onChange={e => handleSearch(e.target.value)}
+                  onChange={e => setQuery(e.target.value)}
                   placeholder='Search movies, shows, people…'
-                  className='h-12 border-0 bg-transparent px-0 text-base shadow-none focus-visible:ring-0'
-                  autoComplete='off'
+                  className='border-0 bg-transparent shadow-none focus-visible:ring-0'
                 />
                 <Button
                   variant='ghost'
-                  size='icon'
-                  className='shrink-0'
+                  size='icon-sm'
                   onClick={() => onOpenChange(false)}
                   aria-label='Close search'
                 >
@@ -115,7 +103,7 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
               </div>
 
               <div className='max-h-[60vh] overflow-y-auto'>
-                {isPending && (
+                {isPending && query && (
                   <p className='px-4 py-6 text-center text-sm text-muted-foreground'>Searching…</p>
                 )}
 
@@ -125,7 +113,7 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
                   </p>
                 )}
 
-                {!isPending && results.length > 0 && (
+                {results.length > 0 && (
                   <ul className='py-1'>
                     {results.map(item => {
                       const title =
@@ -153,18 +141,11 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
                             onClick={() => handleSelect(item)}
                           >
                             <div className='relative size-10 shrink-0 overflow-hidden rounded-md bg-muted'>
-                              {image ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  src={posterUrl(image, "w92") ?? undefined}
-                                  alt=''
-                                  className='size-full object-cover'
-                                />
-                              ) : (
-                                <div className='flex size-full items-center justify-center text-xs text-muted-foreground'>
-                                  —
-                                </div>
-                              )}
+                              <MediaImage
+                                src={posterUrl(image, "w92")}
+                                alt=''
+                                variant={item.media_type === "person" ? "profile" : "thumb"}
+                              />
                             </div>
                             <div className='min-w-0 flex-1'>
                               <p className='truncate text-sm font-medium'>{title}</p>

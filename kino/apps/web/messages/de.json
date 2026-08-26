@@ -4,7 +4,7 @@
     "login": "Anmelden",
     "save": "Speichern",
     "cancel": "Abbrechen",
-    "view_all": "Alle anzeigen →",
+    "view_all": "Alle anzeigen",
     "signed_out": "Abgemeldet",
     "signed_out_desc": "Du wurdest von Kino abgemeldet.",
     "back": "Zurück",
@@ -81,5 +81,9 @@
     "watched": "Gesehen",
     "dropped": "Abgebrochen",
     "on_hold": "Pausiert"
+  },
+  "collection": {
+    "part_of": "Teil der Sammlung",
+    "view_full": "Vollständige Sammlung"
   }
 }

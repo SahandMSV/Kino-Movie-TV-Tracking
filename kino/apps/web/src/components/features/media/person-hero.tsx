@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { posterUrl } from "@/lib/tmdb/config";
 import { formatYear } from "@/lib/tmdb/format";
+import { MediaImage } from "@/components/common/media-image";
 
 type PersonHeroProps = {
   name: string;
@@ -24,11 +25,13 @@ export function PersonHero({
   knownForDepartment,
 }: PersonHeroProps) {
   const profile = posterUrl(profilePath, "w500");
+
   const birthYear = formatYear(birthday);
   const deathYear = formatYear(deathday);
-
-  const lifeSpan =
-    birthYear && deathYear ? `${birthYear} – ${deathYear}` : birthYear ? `Born ${birthYear}` : null;
+  let lifeSpan: string | null = null;
+  if (birthYear && deathYear) lifeSpan = `${birthYear} – ${deathYear}`;
+  else if (birthYear) lifeSpan = `Born ${birthYear}`;
+  else if (deathYear) lifeSpan = `Died ${deathYear}`;
 
   return (
     <section className='relative w-full overflow-hidden'>
@@ -43,14 +46,7 @@ export function PersonHero({
           className='mx-auto w-48 shrink-0 sm:w-56 lg:mx-0 lg:w-64'
         >
           <div className='relative aspect-2/3 overflow-hidden rounded-xl border border-border/60 bg-muted shadow-2xl'>
-            {profile ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={profile} alt={name} className='h-full w-full object-cover' />
-            ) : (
-              <div className='flex h-full items-center justify-center text-muted-foreground'>
-                No photo
-              </div>
-            )}
+            <MediaImage src={profile} alt={name} variant='profile' priority />
           </div>
         </motion.div>
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { posterUrl } from "@/lib/tmdb/config";
+import { MediaImage } from "@/components/common/media-image";
 import { cn } from "@/lib/utils";
 
 type PosterCardProps = {
@@ -46,18 +47,12 @@ export function PosterCard({
     >
       <Link href={link} className='group flex flex-col gap-2 transition-opacity hover:opacity-90'>
         <div className='relative aspect-2/3 overflow-hidden rounded-lg border border-border/50 bg-muted'>
-          {img ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={img}
-              alt={title}
-              className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
-            />
-          ) : (
-            <div className='flex h-full items-center justify-center text-xs text-muted-foreground'>
-              —
-            </div>
-          )}
+          <MediaImage
+            src={img}
+            alt={title}
+            variant='poster'
+            imgClassName='transition-transform duration-300 group-hover:scale-105'
+          />
           {badge ? <div className='absolute right-0.75 top-0 z-10'>{badge}</div> : null}
         </div>
 

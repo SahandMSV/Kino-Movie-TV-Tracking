@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useTranslate } from "@tolgee/react";
 import { posterUrl } from "@/lib/tmdb/config";
+import { MediaImage } from "@/components/common/media-image";
 import type { WatchStatus } from "@/lib/db/models/watch-entry";
 
 export type WatchEntryCard = {
@@ -57,18 +58,12 @@ export function WatchEntryGrid({ entries, emptyTitle, emptyDescription }: WatchE
               className='group flex flex-col gap-2 transition-opacity hover:opacity-90'
             >
               <div className='relative aspect-2/3 overflow-hidden rounded-lg border border-border/50 bg-muted'>
-                {img ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={img}
-                    alt={entry.title}
-                    className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
-                  />
-                ) : (
-                  <div className='flex h-full items-center justify-center text-xs text-muted-foreground'>
-                    —
-                  </div>
-                )}
+                <MediaImage
+                  src={img}
+                  alt={entry.title}
+                  variant='poster'
+                  imgClassName='transition-transform duration-300 group-hover:scale-105'
+                />
               </div>
               <div className='min-w-0 space-y-0.5'>
                 <p className='truncate text-sm font-medium'>{entry.title}</p>
