@@ -24,7 +24,7 @@ const UserSchema = new Schema(
     passwordHash: {
       type: String,
       required: true,
-      select: false, // never return by default
+      select: false,
     },
     name: {
       type: String,
@@ -39,6 +39,7 @@ const UserSchema = new Schema(
     preferences: {
       language: { type: String, default: "en" },
       theme: { type: String, default: "system" },
+      lockEnglishPosters: { type: Boolean, default: true },
     },
   },
   {

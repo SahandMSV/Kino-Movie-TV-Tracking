@@ -105,5 +105,31 @@
     "season_cleared": "Progression de la saison effacée",
     "episode_num": "E{number}",
     "load_error": "Impossible de charger les épisodes"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Gérez votre profil et les préférences de l’application.",
+    "profile": "Profil",
+    "profile_desc": "Mettez à jour vos informations personnelles.",
+    "display_name": "Nom d’affichage",
+    "username": "Nom d’utilisateur",
+    "email": "E-mail",
+    "appearance": "Apparence",
+    "appearance_desc": "Personnalisez l’apparence de Kino.",
+    "theme": "Thème",
+    "theme_system": "Système",
+    "theme_light": "Clair",
+    "theme_dark": "Sombre",
+    "language": "Langue",
+    "language_desc": "Choisissez la langue utilisée dans Kino.",
+    "ui_language": "Langue de l’interface",
+    "images": "Images",
+    "images_desc": "Choisissez comment les affiches sont affichées.",
+    "lock_english_posters": "Privilégier les affiches en anglais",
+    "lock_english_posters_desc": "Lorsqu’il est activé, Kino privilégie les affiches en anglais lorsqu’elles sont disponibles.",
+    "integrations": "Intégrations",
+    "integrations_desc": "Connectez Kino à des services externes.",
+    "trakt_desc": "Synchronisez votre historique de visionnage et votre progression avec Trakt.",
+    "connect_trakt": "Connecter Trakt"
   }
 }

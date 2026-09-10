@@ -105,5 +105,31 @@
     "season_cleared": "Staffel-Fortschritt gelöscht",
     "episode_num": "E{number}",
     "load_error": "Episoden konnten nicht geladen werden"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Verwalte dein Profil und deine App-Einstellungen.",
+    "profile": "Profil",
+    "profile_desc": "Aktualisiere deine persönlichen Informationen.",
+    "display_name": "Anzeigename",
+    "username": "Benutzername",
+    "email": "E-Mail",
+    "appearance": "Darstellung",
+    "appearance_desc": "Passe das Erscheinungsbild von Kino an.",
+    "theme": "Design",
+    "theme_system": "System",
+    "theme_light": "Hell",
+    "theme_dark": "Dunkel",
+    "language": "Sprache",
+    "language_desc": "Wähle die Sprache für die Kino-Oberfläche.",
+    "ui_language": "Oberflächensprache",
+    "images": "Bilder",
+    "images_desc": "Lege fest, wie Posterbilder angezeigt werden.",
+    "lock_english_posters": "Englische Poster bevorzugen",
+    "lock_english_posters_desc": "Wenn aktiviert, bevorzugt Kino englische Posterbilder, sofern verfügbar.",
+    "integrations": "Integrationen",
+    "integrations_desc": "Verbinde Kino mit externen Diensten.",
+    "trakt_desc": "Synchronisiere deinen Wiedergabeverlauf und Fortschritt mit Trakt.",
+    "connect_trakt": "Trakt verbinden"
   }
 }

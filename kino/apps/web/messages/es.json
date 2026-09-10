@@ -105,5 +105,31 @@
     "season_cleared": "Progreso de la temporada borrado",
     "episode_num": "E{number}",
     "load_error": "No se pudieron cargar los episodios"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "subtitle": "Administra tu perfil y las preferencias de la aplicación.",
+    "profile": "Perfil",
+    "profile_desc": "Actualiza tu información personal.",
+    "display_name": "Nombre para mostrar",
+    "username": "Nombre de usuario",
+    "email": "Correo electrónico",
+    "appearance": "Apariencia",
+    "appearance_desc": "Personaliza el aspecto de Kino.",
+    "theme": "Tema",
+    "theme_system": "Sistema",
+    "theme_light": "Claro",
+    "theme_dark": "Oscuro",
+    "language": "Idioma",
+    "language_desc": "Elige el idioma utilizado en Kino.",
+    "ui_language": "Idioma de la interfaz",
+    "images": "Imágenes",
+    "images_desc": "Elige cómo se muestran las imágenes de los pósteres.",
+    "lock_english_posters": "Preferir pósteres en inglés",
+    "lock_english_posters_desc": "Cuando está activado, Kino da preferencia a los pósteres en inglés cuando están disponibles.",
+    "integrations": "Integraciones",
+    "integrations_desc": "Conecta Kino con servicios externos.",
+    "trakt_desc": "Sincroniza tu historial de visualización y progreso con Trakt.",
+    "connect_trakt": "Conectar Trakt"
   }
 }
