@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AppNavbar } from "@/components/features/home/home-nav";
-import { WatchEntryGrid } from "@/components/features/tracking/watch-entry-grid";
+import { VirtualWatchEntryGrid } from "@/components/features/tracking/virtual-watch-entry-grid";
 import { listWatchEntriesByStatuses } from "@/lib/actions/tracking";
 import { getTranslate } from "@/tolgee/server";
 
@@ -12,23 +12,29 @@ export default async function WatchlistPage() {
   }
 
   const t = await getTranslate();
-  const entries = await listWatchEntriesByStatuses(["plan_to_watch"]);
+  const { entries, nextCursor } = await listWatchEntriesByStatuses(["plan_to_watch"], {
+    limit: 36,
+  });
 
   return (
     <div className='flex min-h-screen flex-col'>
       <AppNavbar user={session.user} />
 
-      <main className='flex-1'>
+      <main className='flex-1 pb-12'>
         <div className='mx-auto max-w-6xl px-4 pt-10 sm:px-6'>
           <h1 className='text-3xl font-semibold tracking-tight'>{t("watchlist.title")}</h1>
           <p className='mt-1 text-sm text-muted-foreground'>{t("watchlist.subtitle")}</p>
         </div>
 
-        <WatchEntryGrid
-          entries={entries}
-          emptyTitle={t("watchlist.empty_title")}
-          emptyDescription={t("watchlist.empty_description")}
-        />
+        <div className='pt-8'>
+          <VirtualWatchEntryGrid
+            statuses={["plan_to_watch"]}
+            initialEntries={entries}
+            initialCursor={nextCursor}
+            emptyTitle={t("watchlist.empty_title")}
+            emptyDescription={t("watchlist.empty_description")}
+          />
+        </div>
       </main>
     </div>
   );

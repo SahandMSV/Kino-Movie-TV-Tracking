@@ -44,15 +44,19 @@ export default async function HomePage() {
   const t = await getTranslate();
   const isLoggedIn = !!session?.user;
 
-  const [watching, watchlist, trending, popularMovies, popularTv] = await Promise.all([
-    isLoggedIn ? listWatchEntriesByStatuses(["watching"]) : Promise.resolve([]),
-    isLoggedIn ? listWatchEntriesByStatuses(["plan_to_watch"]) : Promise.resolve([]),
+  const [watchingRes, watchlistRes, trending, popularMovies, popularTv] = await Promise.all([
+    isLoggedIn
+      ? listWatchEntriesByStatuses(["watching"], { limit: 12 })
+      : Promise.resolve({ entries: [], nextCursor: null }),
+    isLoggedIn
+      ? listWatchEntriesByStatuses(["plan_to_watch"], { limit: 12 })
+      : Promise.resolve({ entries: [], nextCursor: null }),
     getTrending("all", "week").catch(() => ({ results: [] })),
     getPopularMovies().catch(() => ({ results: [] })),
     getPopularTv().catch(() => ({ results: [] })),
   ]);
 
-  const continueWatching: CarouselItem[] = watching.slice(0, 12).map(e => ({
+  const continueWatching: CarouselItem[] = watchingRes.entries.map(e => ({
     id: e.tmdbId,
     title: e.title,
     posterPath: e.posterPath,
@@ -60,7 +64,7 @@ export default async function HomePage() {
     subtitle: "Watching",
   }));
 
-  const watchlistItems: CarouselItem[] = watchlist.slice(0, 12).map(e => ({
+  const watchlistItems: CarouselItem[] = watchlistRes.entries.map(e => ({
     id: e.tmdbId,
     title: e.title,
     posterPath: e.posterPath,

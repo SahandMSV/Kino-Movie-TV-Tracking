@@ -375,19 +375,70 @@ export async function getWatchEntryForMedia(
   };
 }
 
-export async function listWatchEntriesByStatuses(statuses: WatchStatus[]) {
+export type WatchEntryListItem = {
+  id: string;
+  tmdbId: number;
+  mediaType: "movie" | "tv";
+  status: WatchStatus;
+  title: string;
+  posterPath: string | null;
+  watchedAt: string | null;
+  updatedAt: string | null;
+  rating: number | null;
+  notes: string | null;
+  watchedEpisodes: WatchedEpisode[];
+};
+
+export type ListWatchEntriesResult = {
+  entries: WatchEntryListItem[];
+  nextCursor: string | null;
+};
+
+function encodeCursor(updatedAt: Date, id: string): string {
+  return `${updatedAt.toISOString()}__${id}`;
+}
+
+function decodeCursor(cursor: string): { updatedAt: Date; id: string } | null {
+  const [iso, id] = cursor.split("__");
+  if (!iso || !id) return null;
+  const updatedAt = new Date(iso);
+  if (Number.isNaN(updatedAt.getTime())) return null;
+  return { updatedAt, id };
+}
+
+export async function listWatchEntriesByStatuses(
+  statuses: WatchStatus[],
+  options?: { limit?: number; cursor?: string | null },
+): Promise<ListWatchEntriesResult> {
   const userId = await requireUserId();
-  if (!userId) return [];
+  if (!userId) return { entries: [], nextCursor: null };
+
+  const limit = Math.min(Math.max(options?.limit ?? 48, 1), 100);
+  const cursor = options?.cursor ? decodeCursor(options.cursor) : null;
 
   await connectMongoose();
-  const entries = await WatchEntry.find({
+
+  const query: Record<string, unknown> = {
     userId,
     status: { $in: statuses },
-  })
-    .sort({ updatedAt: -1 })
+  };
+
+  if (cursor) {
+    query.$or = [
+      { updatedAt: { $lt: cursor.updatedAt } },
+      { updatedAt: cursor.updatedAt, _id: { $lt: cursor.id } },
+    ];
+  }
+
+  const docs = await WatchEntry.find(query)
+    .sort({ updatedAt: -1, _id: -1 })
+    .limit(limit + 1)
     .lean();
 
-  return entries.map(e => ({
+  const hasMore = docs.length > limit;
+  const page = hasMore ? docs.slice(0, limit) : docs;
+
+  const entries: WatchEntryListItem[] = page.map(e => ({
     id: e._id.toString(),
     tmdbId: e.tmdbId,
     mediaType: e.mediaType as "movie" | "tv",
@@ -400,4 +451,10 @@ export async function listWatchEntriesByStatuses(statuses: WatchStatus[]) {
     notes: (e.notes as string | null) ?? null,
     watchedEpisodes: toPlainEpisodes(e.watchedEpisodes),
   }));
+
+  const last = page[page.length - 1];
+  const nextCursor =
+    hasMore && last?.updatedAt ? encodeCursor(new Date(last.updatedAt), last._id.toString()) : null;
+
+  return { entries, nextCursor };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Film, ImageIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +34,21 @@ export function MediaImage({
 }: MediaImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    setLoaded(false);
+    setFailed(false);
+  }, [src]);
+
+  useEffect(() => {
+    const img = imgRef.current;
+    if (!img || !src) return;
+
+    if (img.complete && img.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, [src]);
 
   const showPlaceholder = !src || failed;
   const Icon = ICONS[variant];
@@ -65,6 +80,7 @@ export function MediaImage({
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
+        ref={imgRef}
         src={src}
         alt={alt}
         sizes={sizes}
