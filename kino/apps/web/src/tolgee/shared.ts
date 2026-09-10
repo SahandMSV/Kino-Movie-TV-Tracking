@@ -1,4 +1,5 @@
-import { Tolgee, FormatSimple } from "@tolgee/web";
+import { Tolgee } from "@tolgee/web";
+import { FormatIcu } from "@tolgee/format-icu";
 
 export const ALL_LANGUAGES = ["en", "de", "fr", "es"] as const;
 export type Language = (typeof ALL_LANGUAGES)[number];
@@ -6,7 +7,7 @@ export const DEFAULT_LANGUAGE: Language = "en";
 
 export function TolgeeBase() {
   return Tolgee()
-    .use(FormatSimple())
+    .use(FormatIcu())
     .updateDefaults({
       apiKey: process.env.NEXT_PUBLIC_TOLGEE_API_KEY,
       apiUrl: process.env.NEXT_PUBLIC_TOLGEE_API_URL,

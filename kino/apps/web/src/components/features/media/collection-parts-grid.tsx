@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useTranslate } from "@tolgee/react";
 import { posterUrl } from "@/lib/tmdb/config";
 import { formatYear, formatVote } from "@/lib/tmdb/format";
 import { MediaImage } from "@/components/common/media-image";
@@ -12,6 +13,8 @@ type CollectionPartsGridProps = {
 };
 
 export function CollectionPartsGrid({ parts }: CollectionPartsGridProps) {
+  const { t } = useTranslate();
+
   const ordered = [...parts].sort((a, b) => {
     const da = a.release_date ?? "9999";
     const db = b.release_date ?? "9999";
@@ -21,9 +24,9 @@ export function CollectionPartsGrid({ parts }: CollectionPartsGridProps) {
   if (!ordered.length) {
     return (
       <div className='mx-auto flex max-w-6xl flex-col items-center justify-center px-4 py-24 text-center sm:px-6'>
-        <h2 className='text-xl font-semibold tracking-tight'>No films found</h2>
+        <h2 className='text-xl font-semibold tracking-tight'>{t("collection.empty_title")}</h2>
         <p className='mt-2 max-w-sm text-sm text-muted-foreground'>
-          This collection currently has no parts available.
+          {t("collection.empty_description")}
         </p>
       </div>
     );
@@ -65,7 +68,7 @@ export function CollectionPartsGrid({ parts }: CollectionPartsGridProps) {
                 <p className='truncate text-xs text-muted-foreground'>
                   {year}
                   {year && vote ? " · " : null}
-                  {vote ? `${vote}` : null}
+                  {vote}
                 </p>
               </div>
             </Link>

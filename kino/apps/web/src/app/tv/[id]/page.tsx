@@ -8,6 +8,7 @@ import { VideosSection } from "@/components/features/media/videos-section";
 import { TrackingControls } from "@/components/features/media/tracking-controls";
 import { RatingNotes } from "@/components/features/media/rating-notes";
 import { RecommendationsSection } from "@/components/features/media/recommendations-section";
+import { EpisodeProgress } from "@/components/features/media/episode-progress";
 import { getTv } from "@/lib/tmdb/details";
 import { getTvRecommendations } from "@/lib/tmdb/discover";
 import { getWatchEntryForMedia } from "@/lib/actions/tracking";
@@ -18,6 +19,7 @@ type Props = {
 
 export default async function TvPage({ params }: Props) {
   const { id } = await params;
+
   const tmdbId = Number(id);
   if (!Number.isFinite(tmdbId) || tmdbId <= 0) notFound();
 
@@ -26,7 +28,7 @@ export default async function TvPage({ params }: Props) {
   if (!show) notFound();
 
   const [watchEntry, recommendations] = await Promise.all([
-    session?.user ? getWatchEntryForMedia(tmdbId, "tv") : null,
+    session?.user ? getWatchEntryForMedia(tmdbId, "tv") : Promise.resolve(null),
     getTvRecommendations(tmdbId).catch(() => ({ results: [] })),
   ]);
 
@@ -74,6 +76,14 @@ export default async function TvPage({ params }: Props) {
               mediaType='tv'
               initialRating={watchEntry?.rating ?? null}
               initialNotes={watchEntry?.notes ?? null}
+              hasStatus={!!watchEntry?.status}
+            />
+            <EpisodeProgress
+              tmdbId={show.id}
+              title={show.name}
+              posterPath={show.poster_path}
+              seasons={show.seasons ?? []}
+              initialWatched={watchEntry?.watchedEpisodes ?? []}
               hasStatus={!!watchEntry?.status}
             />
           </>

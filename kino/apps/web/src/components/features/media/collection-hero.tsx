@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslate } from "@tolgee/react";
 import { backdropUrl, posterUrl } from "@/lib/tmdb/config";
 import { MediaImage } from "@/components/common/media-image";
 
@@ -19,6 +20,7 @@ export function CollectionHero({
   backdropPath,
   partCount,
 }: CollectionHeroProps) {
+  const { t } = useTranslate();
   const poster = posterUrl(posterPath, "w500");
   const backdrop = backdropUrl(backdropPath, "w1280");
 
@@ -60,13 +62,13 @@ export function CollectionHero({
         >
           <div className='space-y-2'>
             <p className='text-sm font-medium tracking-wide text-muted-foreground uppercase'>
-              Collection
+              {t("collection.label")}
             </p>
             <h1 className='text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
               {name}
             </h1>
             <p className='text-sm text-muted-foreground'>
-              {partCount} {partCount === 1 ? "film" : "films"}
+              {t("collection.part_count", { count: partCount })}
             </p>
           </div>
 

@@ -112,6 +112,17 @@ const movieDetailSchema = z.object({
   translations: translationsSchema.optional(),
 });
 
+const tvSeasonSummarySchema = z.object({
+  id: z.number().optional(),
+  name: z.string(),
+  overview: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  season_number: z.number(),
+  episode_count: z.number().optional(),
+  air_date: z.string().nullable().optional(),
+  vote_average: z.number().optional(),
+});
+
 const tvDetailSchema = z.object({
   id: z.number(),
   name: z.string(),
@@ -129,6 +140,7 @@ const tvDetailSchema = z.object({
   genres: z.array(genreSchema).default([]),
   tagline: z.string().nullable().optional(),
   status: z.string().optional(),
+  seasons: z.array(tvSeasonSummarySchema).default([]),
   credits: creditsSchema.optional(),
   videos: videosSchema.optional(),
   external_ids: externalIdsSchema.optional(),
@@ -178,7 +190,6 @@ const personDetailSchema = z.object({
   translations: translationsSchema.optional(),
 });
 
-// Collection
 const collectionPartSchema = z.object({
   id: z.number(),
   title: z.string(),
@@ -205,6 +216,29 @@ const collectionDetailSchema = z.object({
   parts: z.array(collectionPartSchema).default([]),
 });
 
+const tvEpisodeSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  overview: z.string().nullable().optional(),
+  still_path: z.string().nullable().optional(),
+  air_date: z.string().nullable().optional(),
+  episode_number: z.number(),
+  season_number: z.number(),
+  runtime: z.number().nullable().optional(),
+  vote_average: z.number().optional(),
+  vote_count: z.number().optional(),
+});
+
+const tvSeasonDetailSchema = z.object({
+  id: z.number().optional(),
+  name: z.string(),
+  overview: z.string().nullable().optional(),
+  poster_path: z.string().nullable().optional(),
+  season_number: z.number(),
+  air_date: z.string().nullable().optional(),
+  episodes: z.array(tvEpisodeSchema).default([]),
+});
+
 export type MovieDetail = z.infer<typeof movieDetailSchema>;
 export type TvDetail = z.infer<typeof tvDetailSchema>;
 export type PersonDetail = z.infer<typeof personDetailSchema>;
@@ -214,6 +248,9 @@ export type TmdbVideo = z.infer<typeof videoSchema>;
 export type CollectionDetail = z.infer<typeof collectionDetailSchema>;
 export type CollectionPart = z.infer<typeof collectionPartSchema>;
 export type BelongsToCollection = z.infer<typeof belongsToCollectionSchema>;
+export type TvSeasonSummary = z.infer<typeof tvSeasonSummarySchema>;
+export type TvEpisode = z.infer<typeof tvEpisodeSchema>;
+export type TvSeasonDetail = z.infer<typeof tvSeasonDetailSchema>;
 
 function isNonEmptyText(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -287,6 +324,17 @@ export async function getTv(id: number): Promise<TvDetail> {
     overview: pickTranslatedField(parsed.overview, translations, "overview", language),
     tagline: pickTranslatedField(parsed.tagline, translations, "tagline", language),
   };
+}
+
+export async function getTvSeason(tvId: number, seasonNumber: number): Promise<TvSeasonDetail> {
+  const language = await resolveTmdbLanguage();
+  const data = await tmdbFetch({
+    path: `/tv/${tvId}/season/${seasonNumber}`,
+    searchParams: { language },
+    next: { revalidate: 60 * 60 * 12 },
+  });
+
+  return tvSeasonDetailSchema.parse(data);
 }
 
 export async function getPerson(id: number): Promise<PersonDetail> {

@@ -13,22 +13,24 @@
   },
   "home": {
     "title": "Kino",
-    "subtitle": "Toutes les histoires qui valent la peine, au même endroit.",
+    "subtitle": "Toutes les histoires qui en valent la peine, au même endroit.",
     "description": "Suivez ce que vous regardez. Découvrez la suite.",
     "welcome_back": "Bon retour, {name}",
-    "welcome_sub": "Reprenez où vous en étiez ou découvrez quelque chose de nouveau.",
+    "welcome_sub": "Reprenez où vous vous êtes arrêté ou découvrez quelque chose de nouveau.",
+    "guest_title": "Découvrir",
+    "guest_sub": "Parcourez les tendances. Connectez-vous pour suivre ce que vous regardez.",
     "continue_watching": "Continuer à regarder",
     "your_watchlist": "Votre liste",
     "trending": "Tendances de la semaine",
     "popular_movies": "Films populaires",
     "popular_tv": "Séries populaires",
-    "empty_continue": "Rien en cours. Marquez un titre comme Watching sur sa page.",
-    "empty_watchlist": "Votre liste est vide. Ajoutez des titres depuis leurs pages."
+    "empty_continue": "Rien en cours. Marquez un titre comme En cours sur sa page.",
+    "empty_watchlist": "Votre liste est vide. Ajoutez des titres depuis leurs pages de détail."
   },
   "nav": {
-    "login": "Connexion",
+    "login": "Se connecter",
     "register": "S'inscrire",
-    "search": "Recherche",
+    "search": "Rechercher",
     "watchlist": "Liste",
     "progress": "Progression",
     "sign_out": "Se déconnecter"
@@ -36,7 +38,7 @@
   "auth": {
     "welcome_back": "Bon retour",
     "sign_in_sub": "Connectez-vous pour continuer sur Kino",
-    "email_or_username": "E-mail / Nom d'utilisateur",
+    "email_or_username": "E-mail / nom d'utilisateur",
     "password": "Mot de passe",
     "sign_in": "Se connecter",
     "signing_in": "Connexion…",
@@ -49,21 +51,21 @@
     "confirm_password": "Confirmer le mot de passe",
     "sign_up": "S'inscrire",
     "signing_up": "Création du compte…",
-    "logged_in": "Connexion réussie",
+    "logged_in": "Connecté avec succès",
     "logged_in_desc": "Bon retour sur Kino !",
     "registered": "Compte créé",
     "registered_desc": "Bienvenue sur Kino !"
   },
   "not_found": {
     "title": "Page introuvable",
-    "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "description": "La page que vous cherchez n'existe pas ou a été déplacée.",
     "code": "404"
   },
   "watchlist": {
     "title": "Liste",
     "subtitle": "Titres que vous prévoyez de regarder.",
     "empty_title": "Votre liste est vide",
-    "empty_description": "Ajoutez des films et séries depuis leurs pages de détail."
+    "empty_description": "Ajoutez des films et des séries depuis leurs pages de détail."
   },
   "progress": {
     "title": "Progression",
@@ -71,9 +73,9 @@
     "watching": "En cours",
     "watched": "Vu",
     "empty_watching_title": "Rien en cours",
-    "empty_watching_desc": "Marquez un titre comme Watching sur sa page de détail.",
+    "empty_watching_desc": "Marquez un titre comme En cours sur sa page de détail.",
     "empty_watched_title": "Aucun titre vu pour l'instant",
-    "empty_watched_desc": "Marquez les films et séries comme Watched quand vous les terminez."
+    "empty_watched_desc": "Marquez films et séries comme Vu lorsque vous les terminez."
   },
   "status": {
     "plan_to_watch": "Liste",
@@ -84,6 +86,24 @@
   },
   "collection": {
     "part_of": "Fait partie de la collection",
-    "view_full": "Voir toute la collection"
+    "view_full": "Voir toute la collection",
+    "label": "Collection",
+    "part_count": "{count, plural, one {# film} other {# films}}",
+    "empty_title": "Aucun film trouvé",
+    "empty_description": "Cette collection n'a actuellement aucune partie disponible."
+  },
+  "episodes": {
+    "title": "Épisodes",
+    "subtitle": "{watched} sur {total} épisodes vus",
+    "need_status": "Ajoutez un statut pour suivre les épisodes.",
+    "season_label": "Saison {number}",
+    "specials": "Spéciaux",
+    "watched_suffix": "vus",
+    "mark_season": "Marquer la saison comme vue",
+    "clear_season": "Effacer la saison",
+    "season_marked": "Saison marquée comme vue",
+    "season_cleared": "Progression de la saison effacée",
+    "episode_num": "E{number}",
+    "load_error": "Impossible de charger les épisodes"
   }
 }

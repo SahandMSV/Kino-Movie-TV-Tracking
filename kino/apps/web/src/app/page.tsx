@@ -7,7 +7,6 @@ import { getTrending, getPopularMovies, getPopularTv } from "@/lib/tmdb/discover
 import { getMovie } from "@/lib/tmdb/details";
 import { deriveReleaseStatus } from "@/lib/tmdb/release-status";
 import { formatYear } from "@/lib/tmdb/format";
-import { Entrance } from "@/components/common/entrance-wrapper";
 import { getTranslate } from "@/tolgee/server";
 
 async function enrichWithReleaseStatus(items: CarouselItem[], limit = 8): Promise<CarouselItem[]> {
@@ -43,29 +42,11 @@ async function enrichWithReleaseStatus(items: CarouselItem[], limit = 8): Promis
 export default async function HomePage() {
   const session = await auth();
   const t = await getTranslate();
-
-  if (!session?.user) {
-    return (
-      <div className='flex min-h-screen flex-col'>
-        <AppNavbar user={null} />
-        <main className='relative flex flex-1 items-center justify-center px-6'>
-          <Entrance>
-            <div className='max-w-md space-y-4 text-center'>
-              <h1 className='text-4xl font-semibold tracking-tight sm:text-5xl'>
-                {t("home.title")}
-              </h1>
-              <p className='text-lg text-muted-foreground'>{t("home.subtitle")}</p>
-              <p className='text-sm text-muted-foreground'>{t("home.description")}</p>
-            </div>
-          </Entrance>
-        </main>
-      </div>
-    );
-  }
+  const isLoggedIn = !!session?.user;
 
   const [watching, watchlist, trending, popularMovies, popularTv] = await Promise.all([
-    listWatchEntriesByStatuses(["watching"]),
-    listWatchEntriesByStatuses(["plan_to_watch"]),
+    isLoggedIn ? listWatchEntriesByStatuses(["watching"]) : Promise.resolve([]),
+    isLoggedIn ? listWatchEntriesByStatuses(["plan_to_watch"]) : Promise.resolve([]),
     getTrending("all", "week").catch(() => ({ results: [] })),
     getPopularMovies().catch(() => ({ results: [] })),
     getPopularTv().catch(() => ({ results: [] })),
@@ -84,7 +65,6 @@ export default async function HomePage() {
     title: e.title,
     posterPath: e.posterPath,
     mediaType: e.mediaType,
-    subtitle: "Watchlist",
   }));
 
   let trendingItems: CarouselItem[] = trending.results
@@ -130,34 +110,49 @@ export default async function HomePage() {
     enrichWithReleaseStatus(popularMovieItems, 8),
   ]);
 
-  const name = session.user.name ?? session.user.username ?? "";
+  const name = session?.user?.name ?? session?.user?.username ?? "";
 
   return (
     <div className='flex min-h-screen flex-col'>
-      <AppNavbar user={session.user} />
+      <AppNavbar user={session?.user ?? null} />
 
       <main className='flex-1 pb-16 pt-8'>
         <div className='mx-auto max-w-6xl space-y-12'>
           <div className='px-4 sm:px-6'>
-            <h1 className='text-2xl font-semibold tracking-tight sm:text-3xl'>
-              {t("home.welcome_back", { name })}
-            </h1>
-            <p className='mt-1 text-sm text-muted-foreground'>{t("home.welcome_sub")}</p>
+            {isLoggedIn ? (
+              <>
+                <h1 className='text-2xl font-semibold tracking-tight sm:text-3xl'>
+                  {t("home.welcome_back", { name })}
+                </h1>
+                <p className='mt-1 text-sm text-muted-foreground'>{t("home.welcome_sub")}</p>
+              </>
+            ) : (
+              <>
+                <h1 className='text-2xl font-semibold tracking-tight sm:text-3xl'>
+                  {t("home.guest_title")}
+                </h1>
+                <p className='mt-1 text-sm text-muted-foreground'>{t("home.guest_sub")}</p>
+              </>
+            )}
           </div>
 
-          <PosterCarousel
-            title={t("home.continue_watching")}
-            items={continueWatching}
-            href='/progress'
-            emptyMessage={t("home.empty_continue")}
-          />
+          {isLoggedIn && (
+            <>
+              <PosterCarousel
+                title={t("home.continue_watching")}
+                items={continueWatching}
+                href='/progress'
+                emptyMessage={t("home.empty_continue")}
+              />
 
-          <PosterCarousel
-            title={t("home.your_watchlist")}
-            items={watchlistItems}
-            href='/watchlist'
-            emptyMessage={t("home.empty_watchlist")}
-          />
+              <PosterCarousel
+                title={t("home.your_watchlist")}
+                items={watchlistItems}
+                href='/watchlist'
+                emptyMessage={t("home.empty_watchlist")}
+              />
+            </>
+          )}
 
           <PosterCarousel title={t("home.trending")} items={trendingItems} />
 

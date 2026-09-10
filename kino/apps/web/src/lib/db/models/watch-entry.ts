@@ -10,6 +10,14 @@ export const WATCH_STATUSES = [
 
 export type WatchStatus = (typeof WATCH_STATUSES)[number];
 
+const WatchedEpisodeSchema = new Schema(
+  {
+    season: { type: Number, required: true, min: 0 },
+    episode: { type: Number, required: true, min: 1 },
+  },
+  { _id: false },
+);
+
 const WatchEntrySchema = new Schema(
   {
     userId: {
@@ -46,7 +54,6 @@ const WatchEntrySchema = new Schema(
       type: Date,
       default: null,
     },
-    // NEW
     rating: {
       type: Number,
       min: 0.5,
@@ -59,6 +66,10 @@ const WatchEntrySchema = new Schema(
       default: null,
       trim: true,
     },
+    watchedEpisodes: {
+      type: [WatchedEpisodeSchema],
+      default: [],
+    },
   },
   {
     timestamps: true,
@@ -70,6 +81,11 @@ WatchEntrySchema.index({ userId: 1, status: 1, updatedAt: -1 });
 
 export type WatchEntryDocument = InferSchemaType<typeof WatchEntrySchema> & {
   _id: Types.ObjectId;
+};
+
+export type WatchedEpisode = {
+  season: number;
+  episode: number;
 };
 
 export const WatchEntry = models.WatchEntry || model("WatchEntry", WatchEntrySchema);

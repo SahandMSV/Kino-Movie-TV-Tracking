@@ -13,16 +13,18 @@
   },
   "home": {
     "title": "Kino",
-    "subtitle": "Todas las historias que merecen verse, en un solo lugar.",
-    "description": "Sigue lo que ves. Descubre qué viene después.",
+    "subtitle": "Todas las historias que merecen la pena, en un solo lugar.",
+    "description": "Registra lo que ves. Descubre qué sigue.",
     "welcome_back": "Bienvenido de nuevo, {name}",
     "welcome_sub": "Continúa donde lo dejaste o descubre algo nuevo.",
-    "continue_watching": "Seguir viendo",
+    "guest_title": "Descubrir",
+    "guest_sub": "Explora lo que es tendencia. Inicia sesión para registrar lo que ves.",
+    "continue_watching": "Continuar viendo",
     "your_watchlist": "Tu lista",
     "trending": "Tendencias de la semana",
     "popular_movies": "Películas populares",
     "popular_tv": "Series populares",
-    "empty_continue": "Nada en progreso. Marca un título como Watching en su página.",
+    "empty_continue": "Nada en progreso. Marca un título como Viendo en su página.",
     "empty_watchlist": "Tu lista está vacía. Añade títulos desde sus páginas de detalle."
   },
   "nav": {
@@ -36,14 +38,14 @@
   "auth": {
     "welcome_back": "Bienvenido de nuevo",
     "sign_in_sub": "Inicia sesión para continuar en Kino",
-    "email_or_username": "Correo / Nombre de usuario",
+    "email_or_username": "Correo / nombre de usuario",
     "password": "Contraseña",
     "sign_in": "Iniciar sesión",
     "signing_in": "Iniciando sesión…",
-    "forgot_password": "¿Olvidaste la contraseña?",
+    "forgot_password": "Olvidé mi contraseña",
     "terms": "Términos de servicio",
     "create_account": "Crear cuenta",
-    "create_sub": "Únete a Kino para seguir lo que ves",
+    "create_sub": "Únete a Kino para registrar lo que ves",
     "username": "Nombre de usuario",
     "email": "Correo",
     "confirm_password": "Confirmar contraseña",
@@ -71,9 +73,9 @@
     "watching": "Viendo",
     "watched": "Visto",
     "empty_watching_title": "Nada en progreso",
-    "empty_watching_desc": "Marca un título como Watching en su página de detalle.",
+    "empty_watching_desc": "Marca un título como Viendo en su página de detalle.",
     "empty_watched_title": "Aún no hay títulos vistos",
-    "empty_watched_desc": "Marca películas y series como Watched cuando las termines."
+    "empty_watched_desc": "Marca películas y series como Visto cuando las termines."
   },
   "status": {
     "plan_to_watch": "Lista",
@@ -84,6 +86,24 @@
   },
   "collection": {
     "part_of": "Parte de la colección",
-    "view_full": "Ver colección completa"
+    "view_full": "Ver colección completa",
+    "label": "Colección",
+    "part_count": "{count, plural, one {# película} other {# películas}}",
+    "empty_title": "No se encontraron películas",
+    "empty_description": "Esta colección no tiene partes disponibles en este momento."
+  },
+  "episodes": {
+    "title": "Episodios",
+    "subtitle": "{watched} de {total} episodios vistos",
+    "need_status": "Añade un estado para registrar episodios.",
+    "season_label": "Temporada {number}",
+    "specials": "Especiales",
+    "watched_suffix": "vistos",
+    "mark_season": "Marcar temporada vista",
+    "clear_season": "Limpiar temporada",
+    "season_marked": "Temporada marcada como vista",
+    "season_cleared": "Progreso de la temporada borrado",
+    "episode_num": "E{number}",
+    "load_error": "No se pudieron cargar los episodios"
   }
 }
