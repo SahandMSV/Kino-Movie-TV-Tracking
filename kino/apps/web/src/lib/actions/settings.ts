@@ -55,6 +55,9 @@ export async function updatePreferences(
 
     revalidatePath("/settings");
     revalidatePath("/");
+    revalidatePath("/watchlist");
+    revalidatePath("/progress");
+
     return { success: true };
   } catch (err) {
     console.error("updatePreferences error:", err);
@@ -67,18 +70,30 @@ export async function getUserPreferences() {
   if (!userId) return null;
 
   await connectMongoose();
+
   const user = await User.findById(userId).lean();
   if (!user) return null;
 
+  const trakt = user.trakt as
+    | {
+        connected?: boolean;
+        username?: string | null;
+      }
+    | undefined;
+
   return {
-    name: user.name ?? null,
-    username: user.username,
-    email: user.email,
-    image: user.image ?? null,
+    name: (user.name as string | null) ?? null,
+    username: user.username as string,
+    email: user.email as string,
+    image: (user.image as string | null) ?? null,
     preferences: {
       language: (user.preferences as any)?.language ?? "en",
       theme: (user.preferences as any)?.theme ?? "system",
       lockEnglishPosters: (user.preferences as any)?.lockEnglishPosters ?? true,
+      trakt: {
+        connected: trakt?.connected ?? false,
+        username: trakt?.username ?? null,
+      },
     },
   };
 }

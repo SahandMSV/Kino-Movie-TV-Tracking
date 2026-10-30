@@ -10,6 +10,7 @@ import {
   type WatchStatus,
   type WatchedEpisode,
 } from "@/lib/db/models/watch-entry";
+import { getPosterPath } from "@/lib/tmdb/details";
 
 const mediaTypeSchema = z.enum(["movie", "tv"]);
 const statusSchema = z.enum(WATCH_STATUSES);
@@ -438,19 +439,23 @@ export async function listWatchEntriesByStatuses(
   const hasMore = docs.length > limit;
   const page = hasMore ? docs.slice(0, limit) : docs;
 
-  const entries: WatchEntryListItem[] = page.map(e => ({
-    id: e._id.toString(),
-    tmdbId: e.tmdbId,
-    mediaType: e.mediaType as "movie" | "tv",
-    status: e.status as WatchStatus,
-    title: e.title,
-    posterPath: e.posterPath as string | null,
-    watchedAt: e.watchedAt ? new Date(e.watchedAt).toISOString() : null,
-    updatedAt: e.updatedAt ? new Date(e.updatedAt).toISOString() : null,
-    rating: (e.rating as number | null) ?? null,
-    notes: (e.notes as string | null) ?? null,
-    watchedEpisodes: toPlainEpisodes(e.watchedEpisodes),
-  }));
+  const entries: WatchEntryListItem[] = await Promise.all(
+    page.map(async e => ({
+      id: e._id.toString(),
+      tmdbId: e.tmdbId,
+      mediaType: e.mediaType as "movie" | "tv",
+      status: e.status as WatchStatus,
+      title: e.title,
+      posterPath:
+        (await getPosterPath(e.tmdbId, e.mediaType as "movie" | "tv").catch(() => null)) ??
+        (e.posterPath as string | null),
+      watchedAt: e.watchedAt ? new Date(e.watchedAt).toISOString() : null,
+      updatedAt: e.updatedAt ? new Date(e.updatedAt).toISOString() : null,
+      rating: (e.rating as number | null) ?? null,
+      notes: (e.notes as string | null) ?? null,
+      watchedEpisodes: toPlainEpisodes(e.watchedEpisodes),
+    })),
+  );
 
   const last = page[page.length - 1];
   const nextCursor =

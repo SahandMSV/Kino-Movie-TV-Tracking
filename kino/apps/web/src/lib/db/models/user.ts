@@ -41,6 +41,28 @@ const UserSchema = new Schema(
       theme: { type: String, default: "system" },
       lockEnglishPosters: { type: Boolean, default: true },
     },
+    trakt: {
+      connected: { type: Boolean, default: false },
+      username: { type: String, default: null },
+      accessToken: {
+        type: String,
+        default: null,
+        select: false,
+      },
+      refreshToken: {
+        type: String,
+        default: null,
+        select: false,
+      },
+      expiresAt: {
+        type: Date,
+        default: null,
+      },
+      connectedAt: {
+        type: Date,
+        default: null,
+      },
+    },
   },
   {
     timestamps: true,

@@ -33,7 +33,8 @@
     "search": "Buscar",
     "watchlist": "Lista",
     "progress": "Progreso",
-    "sign_out": "Cerrar sesión"
+    "sign_out": "Cerrar sesión",
+    "settings": "Ajustes"
   },
   "auth": {
     "welcome_back": "Bienvenido de nuevo",
@@ -108,12 +109,12 @@
   },
   "settings": {
     "title": "Ajustes",
-    "subtitle": "Administra tu perfil y las preferencias de la aplicación.",
+    "subtitle": "Gestiona tu cuenta y preferencias.",
     "profile": "Perfil",
-    "profile_desc": "Actualiza tu información personal.",
-    "display_name": "Nombre para mostrar",
+    "profile_desc": "Cómo apareces en Kino.",
+    "display_name": "Nombre visible",
     "username": "Nombre de usuario",
-    "email": "Correo electrónico",
+    "email": "Correo",
     "appearance": "Apariencia",
     "appearance_desc": "Personaliza el aspecto de Kino.",
     "theme": "Tema",
@@ -121,15 +122,16 @@
     "theme_light": "Claro",
     "theme_dark": "Oscuro",
     "language": "Idioma",
-    "language_desc": "Elige el idioma utilizado en Kino.",
+    "language_desc": "Idioma de la interfaz.",
     "ui_language": "Idioma de la interfaz",
     "images": "Imágenes",
-    "images_desc": "Elige cómo se muestran las imágenes de los pósteres.",
-    "lock_english_posters": "Preferir pósteres en inglés",
-    "lock_english_posters_desc": "Cuando está activado, Kino da preferencia a los pósteres en inglés cuando están disponibles.",
+    "images_desc": "Controla el idioma de los pósters.",
+    "lock_english_posters": "Usar siempre pósters en inglés",
+    "lock_english_posters_desc": "Los pósters se mantienen iguales aunque cambie el idioma de la interfaz.",
     "integrations": "Integraciones",
-    "integrations_desc": "Conecta Kino con servicios externos.",
-    "trakt_desc": "Sincroniza tu historial de visualización y progreso con Trakt.",
-    "connect_trakt": "Conectar Trakt"
+    "integrations_desc": "Conecta servicios externos.",
+    "trakt_desc": "Sincroniza tu historial y progreso.",
+    "connect_trakt": "Conectar Trakt",
+    "saved": "Ajustes guardados"
   }
 }

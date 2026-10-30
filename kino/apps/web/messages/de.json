@@ -33,7 +33,8 @@
     "search": "Suche",
     "watchlist": "Watchlist",
     "progress": "Fortschritt",
-    "sign_out": "Abmelden"
+    "sign_out": "Abmelden",
+    "settings": "Einstellungen"
   },
   "auth": {
     "welcome_back": "Willkommen zurück",
@@ -108,28 +109,29 @@
   },
   "settings": {
     "title": "Einstellungen",
-    "subtitle": "Verwalte dein Profil und deine App-Einstellungen.",
+    "subtitle": "Konto und Einstellungen verwalten.",
     "profile": "Profil",
-    "profile_desc": "Aktualisiere deine persönlichen Informationen.",
+    "profile_desc": "So erscheinst du in Kino.",
     "display_name": "Anzeigename",
     "username": "Benutzername",
     "email": "E-Mail",
-    "appearance": "Darstellung",
-    "appearance_desc": "Passe das Erscheinungsbild von Kino an.",
+    "appearance": "Erscheinungsbild",
+    "appearance_desc": "Passe an, wie Kino aussieht.",
     "theme": "Design",
     "theme_system": "System",
     "theme_light": "Hell",
     "theme_dark": "Dunkel",
     "language": "Sprache",
-    "language_desc": "Wähle die Sprache für die Kino-Oberfläche.",
+    "language_desc": "Oberflächensprache.",
     "ui_language": "Oberflächensprache",
     "images": "Bilder",
-    "images_desc": "Lege fest, wie Posterbilder angezeigt werden.",
-    "lock_english_posters": "Englische Poster bevorzugen",
-    "lock_english_posters_desc": "Wenn aktiviert, bevorzugt Kino englische Posterbilder, sofern verfügbar.",
+    "images_desc": "Sprache von Postern und Artwork steuern.",
+    "lock_english_posters": "Immer englische Poster verwenden",
+    "lock_english_posters_desc": "Poster bleiben gleich, auch wenn die Oberflächensprache wechselt.",
     "integrations": "Integrationen",
-    "integrations_desc": "Verbinde Kino mit externen Diensten.",
-    "trakt_desc": "Synchronisiere deinen Wiedergabeverlauf und Fortschritt mit Trakt.",
-    "connect_trakt": "Trakt verbinden"
+    "integrations_desc": "Externe Dienste verbinden.",
+    "trakt_desc": "Sehhistorie und Fortschritt synchronisieren.",
+    "connect_trakt": "Trakt verbinden",
+    "saved": "Einstellungen gespeichert"
   }
 }

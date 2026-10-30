@@ -2,7 +2,9 @@ import "server-only";
 
 import { tmdbFetch } from "./client";
 import { z } from "zod";
-import { resolveTmdbLanguage } from "./locale";
+import { resolveTmdbLanguage, resolveUiLanguage } from "./locale";
+import { isEnglishPostersLocked } from "./locale";
+import type { Language } from "@/tolgee/shared";
 
 const genreSchema = z.object({
   id: z.number(),
@@ -214,6 +216,7 @@ const collectionDetailSchema = z.object({
   poster_path: z.string().nullable().optional(),
   backdrop_path: z.string().nullable().optional(),
   parts: z.array(collectionPartSchema).default([]),
+  translations: translationsSchema.optional(),
 });
 
 const tvEpisodeSchema = z.object({
@@ -260,32 +263,64 @@ function pickTranslatedField(
   primary: string | null | undefined,
   translations: z.infer<typeof translationsSchema> | undefined,
   field: string,
-  preferredLanguage: string,
+  language: Language,
 ): string | null {
+  const entries = translations?.translations ?? [];
+  const preferredLanguage = language.toLowerCase();
+
+  if (preferredLanguage === "en") {
+    if (isNonEmptyText(primary)) return primary;
+  }
+
+  const byLanguage = (code: string) =>
+    entries.find(entry => entry.iso_639_1?.toLowerCase() === code)?.data?.[field];
+
+  const preferred = byLanguage(preferredLanguage);
+  if (isNonEmptyText(preferred)) return preferred;
+
+  const english = byLanguage("en");
+  if (isNonEmptyText(english)) return english;
+
   if (isNonEmptyText(primary)) return primary;
 
-  const entries = translations?.translations ?? [];
-  if (!entries.length) return null;
-
-  const preferredLang = preferredLanguage.split("-")[0]?.toLowerCase() ?? "en";
-  const byLang = (code: string) => entries.find(t => t.iso_639_1?.toLowerCase() === code);
-
-  const preferredVal = byLang(preferredLang)?.data?.[field];
-  if (isNonEmptyText(preferredVal)) return preferredVal;
-
-  const englishVal = byLang("en")?.data?.[field];
-  if (isNonEmptyText(englishVal)) return englishVal;
-
   for (const entry of entries) {
-    const val = entry.data?.[field];
-    if (isNonEmptyText(val)) return val;
+    const value = entry.data?.[field];
+    if (isNonEmptyText(value)) return value;
   }
 
   return null;
 }
 
+function localizedTitle(
+  primary: string,
+  translations: z.infer<typeof translationsSchema> | undefined,
+  language: Language,
+  field: "title" | "name",
+): string {
+  return pickTranslatedField(primary, translations, field, language) ?? primary;
+}
+
+function localizedOverview(
+  primary: string | null | undefined,
+  translations: z.infer<typeof translationsSchema> | undefined,
+  language: Language,
+): string | null {
+  return pickTranslatedField(primary, translations, "overview", language);
+}
+
+function localizedTagline(
+  primary: string | null | undefined,
+  translations: z.infer<typeof translationsSchema> | undefined,
+  language: Language,
+): string | null {
+  return pickTranslatedField(primary, translations, "tagline", language);
+}
+
 export async function getMovie(id: number): Promise<MovieDetail> {
-  const language = await resolveTmdbLanguage();
+  const lockEnglishPosters = await isEnglishPostersLocked();
+  const uiLanguage = await resolveUiLanguage();
+  const language = lockEnglishPosters ? "en-US" : await resolveTmdbLanguage();
+
   const data = await tmdbFetch({
     path: `/movie/${id}`,
     searchParams: {
@@ -296,38 +331,42 @@ export async function getMovie(id: number): Promise<MovieDetail> {
   });
 
   const parsed = movieDetailSchema.parse(data);
-  const { translations, ...rest } = parsed;
 
   return {
-    ...rest,
-    overview: pickTranslatedField(parsed.overview, translations, "overview", language),
-    tagline: pickTranslatedField(parsed.tagline, translations, "tagline", language),
+    ...parsed,
+    title: localizedTitle(parsed.title, parsed.translations, uiLanguage, "title"),
+    overview: localizedOverview(parsed.overview, parsed.translations, uiLanguage),
+    tagline: localizedTagline(parsed.tagline, parsed.translations, uiLanguage),
   };
 }
 
 export async function getTv(id: number): Promise<TvDetail> {
-  const language = await resolveTmdbLanguage();
+  const lockEnglishPosters = await isEnglishPostersLocked();
+  const uiLanguage = await resolveUiLanguage();
+  const language = lockEnglishPosters ? "en-US" : await resolveTmdbLanguage();
+
   const data = await tmdbFetch({
     path: `/tv/${id}`,
     searchParams: {
       language,
-      append_to_response: "credits,videos,external_ids,translations",
+      append_to_response: "credits,videos,external_ids,release_dates,translations",
     },
     next: { revalidate: 60 * 60 * 6 },
   });
 
   const parsed = tvDetailSchema.parse(data);
-  const { translations, ...rest } = parsed;
 
   return {
-    ...rest,
-    overview: pickTranslatedField(parsed.overview, translations, "overview", language),
-    tagline: pickTranslatedField(parsed.tagline, translations, "tagline", language),
+    ...parsed,
+    name: localizedTitle(parsed.name, parsed.translations, uiLanguage, "name"),
+    overview: localizedOverview(parsed.overview, parsed.translations, uiLanguage),
+    tagline: localizedTagline(parsed.tagline, parsed.translations, uiLanguage),
   };
 }
 
 export async function getTvSeason(tvId: number, seasonNumber: number): Promise<TvSeasonDetail> {
   const language = await resolveTmdbLanguage();
+
   const data = await tmdbFetch({
     path: `/tv/${tvId}/season/${seasonNumber}`,
     searchParams: { language },
@@ -338,7 +377,10 @@ export async function getTvSeason(tvId: number, seasonNumber: number): Promise<T
 }
 
 export async function getPerson(id: number): Promise<PersonDetail> {
-  const language = await resolveTmdbLanguage();
+  const lockEnglishPosters = await isEnglishPostersLocked();
+  const uiLanguage = await resolveUiLanguage();
+  const language = lockEnglishPosters ? "en-US" : await resolveTmdbLanguage();
+
   const data = await tmdbFetch({
     path: `/person/${id}`,
     searchParams: {
@@ -349,23 +391,49 @@ export async function getPerson(id: number): Promise<PersonDetail> {
   });
 
   const parsed = personDetailSchema.parse(data);
-  const { translations, ...rest } = parsed;
 
   return {
-    ...rest,
-    biography: pickTranslatedField(parsed.biography, translations, "biography", language),
+    ...parsed,
+    name: localizedTitle(parsed.name, parsed.translations, uiLanguage, "name"),
+    biography: pickTranslatedField(parsed.biography, parsed.translations, "biography", uiLanguage),
   };
 }
 
 export async function getCollection(id: number): Promise<CollectionDetail> {
-  const language = await resolveTmdbLanguage();
+  const lockEnglishPosters = await isEnglishPostersLocked();
+  const uiLanguage = await resolveUiLanguage();
+  const language = lockEnglishPosters ? "en-US" : await resolveTmdbLanguage();
+
   const data = await tmdbFetch({
     path: `/collection/${id}`,
     searchParams: {
       language,
+      append_to_response: "translations",
     },
     next: { revalidate: 60 * 60 * 12 },
   });
 
-  return collectionDetailSchema.parse(data);
+  const parsed = collectionDetailSchema.parse(data);
+
+  return {
+    ...parsed,
+    name: localizedTitle(parsed.name, parsed.translations, uiLanguage, "name"),
+    overview: localizedOverview(parsed.overview, parsed.translations, uiLanguage),
+  };
+}
+
+export async function getPosterPath(id: number, mediaType: "movie" | "tv"): Promise<string | null> {
+  const language = await resolveTmdbLanguage();
+
+  const data = await tmdbFetch({
+    path: `/${mediaType}/${id}`,
+    searchParams: { language },
+    next: { revalidate: 60 * 60 * 6 },
+  });
+
+  return z
+    .object({
+      poster_path: z.string().nullable(),
+    })
+    .parse(data).poster_path;
 }

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useTolgee, useTranslate } from "@tolgee/react";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,10 @@ type InitialData = {
     language: string;
     theme: string;
     lockEnglishPosters: boolean;
+    trakt: {
+      connected: boolean;
+      username: string | null;
+    };
   };
 };
 
@@ -58,8 +63,8 @@ export function SettingsForm({ initial }: { initial: InitialData }) {
     startTransition(async () => {
       const res = await updatePreferences({
         name: name.trim() || undefined,
-        language: language as any,
-        theme: theme as any,
+        language: language as (typeof ALL_LANGUAGES)[number],
+        theme: theme as "light" | "dark" | "system",
         lockEnglishPosters,
       });
 
@@ -72,6 +77,7 @@ export function SettingsForm({ initial }: { initial: InitialData }) {
         await setLanguage(language);
         await tolgee.changeLanguage(language);
       }
+
       setTheme(theme);
 
       toast.success(t("settings.saved"));
@@ -79,9 +85,12 @@ export function SettingsForm({ initial }: { initial: InitialData }) {
     });
   };
 
+  const connectTrakt = () => {
+    window.location.assign("/api/integrations/trakt/connect");
+  };
+
   return (
     <div className='space-y-10'>
-      {/* Profile */}
       <section className='space-y-4'>
         <div>
           <h2 className='text-lg font-medium'>{t("settings.profile")}</h2>
@@ -111,7 +120,6 @@ export function SettingsForm({ initial }: { initial: InitialData }) {
 
       <Separator />
 
-      {/* Appearance */}
       <section className='space-y-4'>
         <div>
           <h2 className='text-lg font-medium'>{t("settings.appearance")}</h2>
@@ -141,7 +149,6 @@ export function SettingsForm({ initial }: { initial: InitialData }) {
 
       <Separator />
 
-      {/* Language */}
       <section className='space-y-4'>
         <div>
           <h2 className='text-lg font-medium'>{t("settings.language")}</h2>
@@ -173,7 +180,6 @@ export function SettingsForm({ initial }: { initial: InitialData }) {
 
       <Separator />
 
-      {/* Images */}
       <section className='space-y-4'>
         <div>
           <h2 className='text-lg font-medium'>{t("settings.images")}</h2>
@@ -198,20 +204,33 @@ export function SettingsForm({ initial }: { initial: InitialData }) {
 
       <Separator />
 
-      {/* Integrations */}
       <section className='space-y-4'>
         <div>
           <h2 className='text-lg font-medium'>{t("settings.integrations")}</h2>
           <p className='text-sm text-muted-foreground'>{t("settings.integrations_desc")}</p>
         </div>
+
         <div className='flex items-center justify-between gap-4 rounded-lg border border-border/60 px-4 py-3'>
-          <div className='space-y-0.5'>
+          <div className='min-w-0 space-y-0.5'>
             <p className='text-sm font-medium'>Trakt</p>
             <p className='text-xs text-muted-foreground'>{t("settings.trakt_desc")}</p>
+            {initial.preferences.trakt.connected && initial.preferences.trakt.username ? (
+              <p className='truncate text-xs text-muted-foreground'>
+                @{initial.preferences.trakt.username}
+              </p>
+            ) : null}
           </div>
-          <Button variant='secondary' size='sm' disabled>
-            {t("settings.connect_trakt")}
-          </Button>
+
+          {initial.preferences.trakt.connected ? (
+            <Button variant='secondary' size='sm' disabled>
+              <Check className='size-4' />
+              {t("settings.connect_trakt")}
+            </Button>
+          ) : (
+            <Button variant='secondary' size='sm' onClick={connectTrakt}>
+              {t("settings.connect_trakt")}
+            </Button>
+          )}
         </div>
       </section>
 
