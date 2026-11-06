@@ -45,19 +45,20 @@ export default async function MoviePage({ params }: Props) {
 
       <main className='flex-1 pb-28'>
         <MediaHero
-          tmdbId={tmdbId}
+          tmdbId={movie.id}
           title={movie.title}
-          popularity={movie.popularity}
           overview={movie.overview}
           posterPath={movie.poster_path}
           backdropPath={movie.backdrop_path}
           releaseDate={movie.release_date}
           runtime={movie.runtime}
-          voteAverage={movie.vote_average}
-          voteCount={movie.vote_count}
           genres={movie.genres}
           status={movie.status}
           mediaType='movie'
+          imdbId={movie.external_ids?.imdb_id}
+          facebookId={movie.external_ids?.facebook_id}
+          instagramId={movie.external_ids?.instagram_id}
+          twitterId={movie.external_ids?.twitter_id}
         />
 
         {movie.belongs_to_collection ? (
@@ -85,3 +86,8 @@ export default async function MoviePage({ params }: Props) {
     </div>
   );
 }
+
+
+
+
+

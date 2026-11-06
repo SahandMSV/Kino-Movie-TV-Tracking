@@ -1,12 +1,12 @@
 import { Flame } from "lucide-react";
 import { backdropUrl, posterUrl } from "@/lib/tmdb/config";
-import { formatRuntime, formatVote, formatYear } from "@/lib/tmdb/format";
+import { formatRuntime, formatYear } from "@/lib/tmdb/format";
 import { MediaImage } from "@/components/common/media-image";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { glass } from "@/lib/glass";
 import { MediaTopBar } from "./media-top-bar";
-import { RatingBoxes, type RatingBox } from "./rating-boxes";
+import { ExternalRatings } from "./external-ratings";
 
 type MediaHeroProps = {
   tmdbId: number;
@@ -16,16 +16,19 @@ type MediaHeroProps = {
   backdropPath?: string | null;
   releaseDate?: string | null;
   runtime?: number | null;
-  voteAverage?: number;
-  voteCount?: number;
   popularity?: number;
   genres?: { id: number; name: string }[];
   status?: string | null;
   mediaType: "movie" | "tv";
+  /** From TMDB external_ids; used to link straight to the IMDb page */
+  imdbId?: string | null;
   numberOfSeasons?: number | null;
   numberOfEpisodes?: number | null;
   firstAirDate?: string | null;
   lastAirDate?: string | null;
+  facebookId?: string | null;
+  instagramId?: string | null;
+  twitterId?: string | null;
 };
 
 export function MediaHero({
@@ -36,15 +39,17 @@ export function MediaHero({
   backdropPath,
   releaseDate,
   runtime,
-  voteAverage = 0,
-  voteCount = 0,
   popularity,
   genres = [],
   status,
   mediaType,
+  imdbId,
   numberOfSeasons,
   numberOfEpisodes,
   firstAirDate,
+  facebookId,
+  instagramId,
+  twitterId,
 }: MediaHeroProps) {
   const poster = posterUrl(posterPath, "w500");
   // The backdrop is heavily blurred, so a mid-size image is plenty.
@@ -68,25 +73,9 @@ export function MediaHero({
   const popularityLabel =
     popularity !== undefined && popularity > 0 ? Math.round(popularity).toLocaleString() : null;
 
-  // Order here is the display order. Only TMDB has real data for now;
-  // the rest are placeholders until rating integrations exist.
-  const ratings: RatingBox[] = [
-    {
-      id: "tmdb",
-      label: "TMDB",
-      value: voteAverage > 0 ? formatVote(voteAverage) : null,
-      caption: voteAverage > 0 && voteCount > 0 ? `${voteCount.toLocaleString()} votes` : null,
-    },
-    { id: "imdb", label: "IMDb", value: null },
-    { id: "rotten-tomatoes", label: "Rotten Tomatoes", value: null },
-    { id: "metacritic", label: "Metacritic", value: null },
-  ];
-
   return (
-    // -mt-[57px] pulls the hero up underneath the sticky navbar (h-14 + 1px border),
-    // so the glass navbar sits on top of the backdrop and picks up its colors.
+    // -mt-[57px] pulls the hero up underneath the sticky navbar (h-14 + 1px border)
     <section className='relative isolate -mt-[57px] w-full overflow-hidden'>
-      {/* Blurred backdrop that fades to transparent from top to bottom */}
       {backgroundSrc ? (
         <div
           aria-hidden
@@ -108,7 +97,15 @@ export function MediaHero({
       ) : null}
 
       <div className='mx-auto max-w-6xl space-y-5 px-4 pb-10 pt-[calc(57px+1rem)] sm:px-6 sm:pt-[calc(57px+1.25rem)]'>
-        <MediaTopBar tmdbId={tmdbId} mediaType={mediaType} />
+        <MediaTopBar
+          tmdbId={tmdbId}
+          mediaType={mediaType}
+          title={title}
+          imdbId={imdbId}
+          facebookId={facebookId}
+          instagramId={instagramId}
+          twitterId={twitterId}
+        />
 
         {/*
           Below lg:  [poster | title, meta, genres] on the first row,
@@ -139,11 +136,14 @@ export function MediaHero({
             </div>
 
             {genres.length > 0 || popularityLabel ? (
-              <div className='mt-3 flex flex-wrap items-center gap-1.5 sm:gap-2 lg:mt-0 lg:max-w-md lg:shrink-0 lg:justify-end'>
+              <div className='mt-3 flex flex-wrap items-center gap-1 sm:gap-1.5 lg:mt-0 lg:max-w-md lg:shrink-0 lg:justify-end'>
                 {genres.map(g => (
                   <span
                     key={g.id}
-                    className='rounded-full border border-border/60 bg-muted/50 px-2.5 py-0.5 text-[11px] font-medium backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs'
+                    className={cn(
+                      "rounded-full border border-border/60 bg-muted/50 px-2.5 py-0.5 text-[11px] font-medium backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs",
+                      glass,
+                    )}
                   >
                     {g.name}
                   </span>
@@ -192,7 +192,13 @@ export function MediaHero({
                 <h2 className='text-xs font-medium uppercase tracking-wider text-muted-foreground'>
                   Ratings
                 </h2>
-                <RatingBoxes ratings={ratings} />
+                <ExternalRatings
+                  tmdbId={tmdbId}
+                  mediaType={mediaType}
+                  title={title}
+                  releaseDate={releaseDate ?? firstAirDate}
+                  imdbId={imdbId}
+                />
               </div>
             </div>
           </div>
@@ -201,3 +207,13 @@ export function MediaHero({
     </section>
   );
 }
+
+
+
+
+
+
+
+
+
+

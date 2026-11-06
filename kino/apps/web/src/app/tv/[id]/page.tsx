@@ -44,20 +44,21 @@ export default async function TvPage({ params }: Props) {
 
       <main className='flex-1 pb-28'>
         <MediaHero
-          tmdbId={tmdbId}
+          tmdbId={show.id}
           title={show.name}
-          popularity={show.popularity}
           overview={show.overview}
           posterPath={show.poster_path}
           backdropPath={show.backdrop_path}
           firstAirDate={show.first_air_date}
           lastAirDate={show.last_air_date}
           runtime={runtime}
-          voteAverage={show.vote_average}
-          voteCount={show.vote_count}
           genres={show.genres}
           status={show.status}
           mediaType='tv'
+          imdbId={show.external_ids?.imdb_id}
+          facebookId={show.external_ids?.facebook_id}
+          instagramId={show.external_ids?.instagram_id}
+          twitterId={show.external_ids?.twitter_id}
           numberOfSeasons={show.number_of_seasons}
           numberOfEpisodes={show.number_of_episodes}
         />
@@ -90,3 +91,6 @@ export default async function TvPage({ params }: Props) {
     </div>
   );
 }
+
+
+
