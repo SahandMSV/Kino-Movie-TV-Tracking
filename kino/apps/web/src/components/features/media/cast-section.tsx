@@ -1,64 +1,66 @@
 "use client";
 
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { posterUrl } from "@/lib/tmdb/config";
-import { MediaImage } from "@/components/common/media-image";
 import type { CreditPerson } from "@/lib/tmdb/details";
+import { MAX_VISIBLE, PeopleSection, type PersonItem } from "./people-section";
 
 type CastSectionProps = {
   cast: CreditPerson[];
 };
 
-function pickCast(cast: CreditPerson[], limit = 18) {
-  return [...cast].sort((a, b) => (a.order ?? 999) - (b.order ?? 999)).slice(0, limit);
+function pickCast(cast: CreditPerson[]): PersonItem[] {
+  // One row per person; merge multiple characters if the same actor is listed twice.
+  const byId = new Map<
+    number,
+    {
+      id: number;
+      name: string;
+      profilePath: string | null | undefined;
+      characters: string[];
+      order: number;
+    }
+  >();
+
+  const sorted = [...cast].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+
+  for (const person of sorted) {
+    const character = person.character?.trim();
+    const existing = byId.get(person.id);
+
+    if (!existing) {
+      byId.set(person.id, {
+        id: person.id,
+        name: person.name,
+        profilePath: person.profile_path,
+        characters: character ? [character] : [],
+        order: person.order ?? 999,
+      });
+      continue;
+    }
+
+    if (character && !existing.characters.includes(character)) {
+      existing.characters.push(character);
+    }
+    if (!existing.profilePath && person.profile_path) {
+      existing.profilePath = person.profile_path;
+    }
+    existing.order = Math.min(existing.order, person.order ?? 999);
+  }
+
+  return [...byId.values()]
+    .sort((a, b) => a.order - b.order)
+    .slice(0, MAX_VISIBLE)
+    .map(entry => ({
+      key: String(entry.id),
+      id: entry.id,
+      name: entry.name,
+      role: entry.characters.length ? entry.characters.join(", ") : null,
+      profilePath: entry.profilePath,
+    }));
 }
 
 export function CastSection({ cast }: CastSectionProps) {
-  const top = pickCast(cast);
-  if (!top.length) return null;
+  const total = new Set(cast.map(p => p.id)).size;
 
-  return (
-    <section className='mx-auto max-w-6xl px-4 py-10 sm:px-6'>
-      <h2 className='mb-6 text-xl font-semibold tracking-tight'>Cast</h2>
-
-      <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'>
-        {top.map((person, i) => {
-          const img = posterUrl(person.profile_path, "w185");
-          return (
-            <motion.div
-              key={`${person.id}-${person.character ?? i}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.3,
-                delay: i * 0.02,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
-              <Link
-                href={`/person/${person.id}`}
-                className='group flex flex-col gap-2 transition-opacity hover:opacity-90'
-              >
-                <div className='relative aspect-2/3 overflow-hidden rounded-lg border border-border/50 bg-muted'>
-                  <MediaImage
-                    src={img}
-                    alt={person.name}
-                    variant='profile'
-                    imgClassName='transition-transform duration-300 group-hover:scale-105'
-                  />
-                </div>
-                <div className='min-w-0 space-y-0.5'>
-                  <p className='truncate text-sm font-medium'>{person.name}</p>
-                  {person.character ? (
-                    <p className='truncate text-xs text-muted-foreground'>{person.character}</p>
-                  ) : null}
-                </div>
-              </Link>
-            </motion.div>
-          );
-        })}
-      </div>
-    </section>
-  );
+  return <PeopleSection title='Cast' people={pickCast(cast)} total={total} />;
 }
+

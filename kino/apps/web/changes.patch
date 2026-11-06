@@ -1,0 +1,496 @@
+===== STATUS =====
+## main...origin/main
+ M src/components/features/media/cast-section.tsx
+ M src/components/features/media/crew-section.tsx
+ M src/components/features/media/media-top-bar.tsx
+?? changes.patch
+?? src/components/features/media/people-section.tsx
+
+===== FULL DIFF (staged + unstaged) =====
+diff --git c/kino/apps/web/src/components/features/media/cast-section.tsx w/kino/apps/web/src/components/features/media/cast-section.tsx
+index 89c57a8..5d1a63f 100644
+--- c/kino/apps/web/src/components/features/media/cast-section.tsx
++++ w/kino/apps/web/src/components/features/media/cast-section.tsx
+@@ -1,64 +1,66 @@
+ "use client";
+ 
+-import Link from "next/link";
+-import { motion } from "framer-motion";
+-import { posterUrl } from "@/lib/tmdb/config";
+-import { MediaImage } from "@/components/common/media-image";
+ import type { CreditPerson } from "@/lib/tmdb/details";
++import { MAX_VISIBLE, PeopleSection, type PersonItem } from "./people-section";
+ 
+ type CastSectionProps = {
+   cast: CreditPerson[];
+ };
+ 
+-function pickCast(cast: CreditPerson[], limit = 18) {
+-  return [...cast].sort((a, b) => (a.order ?? 999) - (b.order ?? 999)).slice(0, limit);
++function pickCast(cast: CreditPerson[]): PersonItem[] {
++  // One row per person; merge multiple characters if the same actor is listed twice.
++  const byId = new Map<
++    number,
++    {
++      id: number;
++      name: string;
++      profilePath: string | null | undefined;
++      characters: string[];
++      order: number;
++    }
++  >();
++
++  const sorted = [...cast].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
++
++  for (const person of sorted) {
++    const character = person.character?.trim();
++    const existing = byId.get(person.id);
++
++    if (!existing) {
++      byId.set(person.id, {
++        id: person.id,
++        name: person.name,
++        profilePath: person.profile_path,
++        characters: character ? [character] : [],
++        order: person.order ?? 999,
++      });
++      continue;
++    }
++
++    if (character && !existing.characters.includes(character)) {
++      existing.characters.push(character);
++    }
++    if (!existing.profilePath && person.profile_path) {
++      existing.profilePath = person.profile_path;
++    }
++    existing.order = Math.min(existing.order, person.order ?? 999);
++  }
++
++  return [...byId.values()]
++    .sort((a, b) => a.order - b.order)
++    .slice(0, MAX_VISIBLE)
++    .map(entry => ({
++      key: String(entry.id),
++      id: entry.id,
++      name: entry.name,
++      role: entry.characters.length ? entry.characters.join(", ") : null,
++      profilePath: entry.profilePath,
++    }));
+ }
+ 
+ export function CastSection({ cast }: CastSectionProps) {
+-  const top = pickCast(cast);
+-  if (!top.length) return null;
++  const total = new Set(cast.map(p => p.id)).size;
+ 
+-  return (
+-    <section className='mx-auto max-w-6xl px-4 py-10 sm:px-6'>
+-      <h2 className='mb-6 text-xl font-semibold tracking-tight'>Cast</h2>
+-
+-      <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'>
+-        {top.map((person, i) => {
+-          const img = posterUrl(person.profile_path, "w185");
+-          return (
+-            <motion.div
+-              key={`${person.id}-${person.character ?? i}`}
+-              initial={{ opacity: 0, y: 10 }}
+-              animate={{ opacity: 1, y: 0 }}
+-              transition={{
+-                duration: 0.3,
+-                delay: i * 0.02,
+-                ease: [0.22, 1, 0.36, 1],
+-              }}
+-            >
+-              <Link
+-                href={`/person/${person.id}`}
+-                className='group flex flex-col gap-2 transition-opacity hover:opacity-90'
+-              >
+-                <div className='relative aspect-2/3 overflow-hidden rounded-lg border border-border/50 bg-muted'>
+-                  <MediaImage
+-                    src={img}
+-                    alt={person.name}
+-                    variant='profile'
+-                    imgClassName='transition-transform duration-300 group-hover:scale-105'
+-                  />
+-                </div>
+-                <div className='min-w-0 space-y-0.5'>
+-                  <p className='truncate text-sm font-medium'>{person.name}</p>
+-                  {person.character ? (
+-                    <p className='truncate text-xs text-muted-foreground'>{person.character}</p>
+-                  ) : null}
+-                </div>
+-              </Link>
+-            </motion.div>
+-          );
+-        })}
+-      </div>
+-    </section>
+-  );
++  return <PeopleSection title='Cast' people={pickCast(cast)} total={total} />;
+ }
++
+diff --git c/kino/apps/web/src/components/features/media/crew-section.tsx w/kino/apps/web/src/components/features/media/crew-section.tsx
+index d8cf5dd..b89a97a 100644
+--- c/kino/apps/web/src/components/features/media/crew-section.tsx
++++ w/kino/apps/web/src/components/features/media/crew-section.tsx
+@@ -1,10 +1,7 @@
+ "use client";
+ 
+-import Link from "next/link";
+-import { motion } from "framer-motion";
+-import { posterUrl } from "@/lib/tmdb/config";
+-import { MediaImage } from "@/components/common/media-image";
+ import type { CreditPerson } from "@/lib/tmdb/details";
++import { MAX_VISIBLE, PeopleSection, type PersonItem } from "./people-section";
+ 
+ type CrewSectionProps = {
+   crew: CreditPerson[];
+@@ -22,69 +19,71 @@ const PRIORITY_JOBS = [
+   "Editor",
+ ];
+ 
+-function pickCrew(crew: CreditPerson[], limit = 12) {
+-  const scored = [...crew].map(c => {
+-    const job = c.job ?? "";
+-    const idx = PRIORITY_JOBS.indexOf(job);
+-    return { ...c, _score: idx === -1 ? 100 : idx };
+-  });
++function jobScore(job: string | null | undefined) {
++  const idx = PRIORITY_JOBS.indexOf(job ?? "");
++  return idx === -1 ? 100 : idx;
++}
+ 
+-  const seen = new Set<string>();
+-  const unique = scored.filter(c => {
+-    const key = `${c.id}-${c.job}`;
+-    if (seen.has(key)) return false;
+-    seen.add(key);
+-    return true;
+-  });
++function pickCrew(crew: CreditPerson[]): PersonItem[] {
++  // Group every credit by person so Nolan (Director / Writer / Producer)
++  // becomes a single row with roles merged.
++  const byId = new Map<
++    number,
++    {
++      id: number;
++      name: string;
++      profilePath: string | null | undefined;
++      jobs: string[];
++      bestScore: number;
++    }
++  >();
+ 
+-  return unique.sort((a, b) => a._score - b._score).slice(0, limit);
++  for (const person of crew) {
++    const job = person.job?.trim();
++    const existing = byId.get(person.id);
++
++    if (!existing) {
++      byId.set(person.id, {
++        id: person.id,
++        name: person.name,
++        profilePath: person.profile_path,
++        jobs: job ? [job] : [],
++        bestScore: jobScore(job),
++      });
++      continue;
++    }
++
++    if (job && !existing.jobs.includes(job)) {
++      existing.jobs.push(job);
++    }
++    // Prefer a profile photo when later credits include one.
++    if (!existing.profilePath && person.profile_path) {
++      existing.profilePath = person.profile_path;
++    }
++    existing.bestScore = Math.min(existing.bestScore, jobScore(job));
++  }
++
++  // Within each person, order jobs by priority (Director before Writer, etc.).
++  for (const entry of byId.values()) {
++    entry.jobs.sort((a, b) => jobScore(a) - jobScore(b));
++  }
++
++  return [...byId.values()]
++    .sort((a, b) => a.bestScore - b.bestScore || a.name.localeCompare(b.name))
++    .slice(0, MAX_VISIBLE)
++    .map(entry => ({
++      key: String(entry.id),
++      id: entry.id,
++      name: entry.name,
++      role: entry.jobs.length ? entry.jobs.join(", ") : null,
++      profilePath: entry.profilePath,
++    }));
+ }
+ 
+ export function CrewSection({ crew }: CrewSectionProps) {
+-  const top = pickCrew(crew);
+-  if (!top.length) return null;
++  const total = new Set(crew.map(p => p.id)).size;
+ 
+-  return (
+-    <section className='mx-auto max-w-6xl px-4 py-10 sm:px-6'>
+-      <h2 className='mb-6 text-xl font-semibold tracking-tight'>Crew</h2>
+-
+-      <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'>
+-        {top.map((person, i) => {
+-          const img = posterUrl(person.profile_path, "w185");
+-          return (
+-            <motion.div
+-              key={`${person.id}-${person.job ?? i}`}
+-              initial={{ opacity: 0, y: 10 }}
+-              animate={{ opacity: 1, y: 0 }}
+-              transition={{
+-                duration: 0.3,
+-                delay: i * 0.02,
+-                ease: [0.22, 1, 0.36, 1],
+-              }}
+-            >
+-              <Link
+-                href={`/person/${person.id}`}
+-                className='group flex flex-col gap-2 transition-opacity hover:opacity-90'
+-              >
+-                <div className='relative aspect-2/3 overflow-hidden rounded-lg border border-border/50 bg-muted'>
+-                  <MediaImage
+-                    src={img}
+-                    alt={person.name}
+-                    variant='profile'
+-                    imgClassName='transition-transform duration-300 group-hover:scale-105'
+-                  />
+-                </div>
+-                <div className='min-w-0 space-y-0.5'>
+-                  <p className='truncate text-sm font-medium'>{person.name}</p>
+-                  {person.job ? (
+-                    <p className='truncate text-xs text-muted-foreground'>{person.job}</p>
+-                  ) : null}
+-                </div>
+-              </Link>
+-            </motion.div>
+-          );
+-        })}
+-      </div>
+-    </section>
+-  );
++  return <PeopleSection title='Crew' people={pickCrew(crew)} total={total} />;
+ }
++
++
+diff --git c/kino/apps/web/src/components/features/media/media-top-bar.tsx w/kino/apps/web/src/components/features/media/media-top-bar.tsx
+index 82c4148..ffff36a 100644
+--- c/kino/apps/web/src/components/features/media/media-top-bar.tsx
++++ w/kino/apps/web/src/components/features/media/media-top-bar.tsx
+@@ -1,6 +1,7 @@
+ "use client";
+ 
+ import { useEffect, useState } from "react";
++import { createPortal } from "react-dom";
+ import { AnimatePresence, motion } from "framer-motion";
+ import { Copy, ExternalLink, Film, MoreHorizontal, Share2, Tv, X } from "lucide-react";
+ import {
+@@ -68,6 +69,17 @@ export function MediaTopBar({
+ 
+   const hasSocial = !!(facebookUrl || instagramUrl || twitterUrl);
+ 
++  useEffect(() => {
++    if (!open) return;
++
++    const previousOverflow = document.body.style.overflow;
++    document.body.style.overflow = "hidden";
++
++    return () => {
++      document.body.style.overflow = previousOverflow;
++    };
++  }, [open]);
++
+   useEffect(() => {
+     if (!open) return;
+     const onKey = (e: KeyboardEvent) => {
+@@ -161,97 +173,103 @@ export function MediaTopBar({
+         </div>
+       </div>
+ 
+-      <AnimatePresence>
+-        {open && (
+-          <>
+-            <motion.div
+-              initial={{ opacity: 0 }}
+-              animate={{ opacity: 1 }}
+-              exit={{ opacity: 0 }}
+-              transition={{ duration: 0.15 }}
+-              className='fixed inset-0 z-50 bg-background/60 backdrop-blur-sm'
+-              onClick={() => setOpen(false)}
+-            />
+-
+-            <motion.div
+-              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+-              animate={{ opacity: 1, y: 0, scale: 1 }}
+-              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+-              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+-              className='fixed left-1/2 top-[18%] z-50 w-full max-w-md -translate-x-1/2 px-4'
+-            >
+-              <div className='overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl'>
+-                <div className='flex items-center justify-between border-b border-border/50 px-4 py-3'>
+-                  <div className='min-w-0'>
+-                    <p className='text-sm font-semibold tracking-tight'>Share</p>
+-                    <p className='truncate text-xs text-muted-foreground'>{shareTitle}</p>
+-                  </div>
+-                  <Button
+-                    variant='ghost'
+-                    size='icon-sm'
++      {typeof document !== "undefined"
++        ? createPortal(
++            <AnimatePresence>
++              {open && (
++                <div className='fixed inset-x-0 bottom-0 top-[57px] z-50'>
++                  <motion.div
++                    initial={{ opacity: 0 }}
++                    animate={{ opacity: 1 }}
++                    exit={{ opacity: 0 }}
++                    transition={{ duration: 0.15 }}
++                    className='absolute inset-0 bg-background/60 backdrop-blur-sm'
+                     onClick={() => setOpen(false)}
+-                    aria-label='Close'
+-                  >
+-                    <X className='size-4' />
+-                  </Button>
+-                </div>
++                  />
+ 
+-                <div className='max-h-[70vh] space-y-4 overflow-y-auto p-3'>
+-                  <div className='grid grid-cols-2 gap-2'>
+-                    <button
+-                      type='button'
+-                      onClick={copyLink}
+-                      className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
++                  <div className='pointer-events-none absolute inset-0 flex items-center justify-center p-4'>
++                    <motion.div
++                      initial={{ opacity: 0, y: 12, scale: 0.98 }}
++                      animate={{ opacity: 1, y: 0, scale: 1 }}
++                      exit={{ opacity: 0, y: 8, scale: 0.98 }}
++                      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
++                      className='pointer-events-auto w-full max-w-md'
+                     >
+-                      <Copy className='size-4' />
+-                      Copy link
+-                    </button>
+-                    <button
+-                      type='button'
+-                      onClick={nativeShare}
+-                      className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
+-                    >
+-                      <Share2 className='size-4' />
+-                      Share…
+-                    </button>
+-                  </div>
++                      <div className='flex max-h-full flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl'>
++                        <div className='flex items-center justify-between border-b border-border/50 px-4 py-3'>
++                          <div className='min-w-0'>
++                            <p className='text-sm font-semibold tracking-tight'>Share</p>
++                            <p className='truncate text-xs text-muted-foreground'>{shareTitle}</p>
++                          </div>
++                          <Button
++                            variant='ghost'
++                            size='icon-sm'
++                            onClick={() => setOpen(false)}
++                            aria-label='Close'
++                          >
++                            <X className='size-4' />
++                          </Button>
++                        </div>
+ 
+-                  <div>
+-                    <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
+-                      Platforms
+-                    </p>
+-                    <div className='space-y-0.5'>
+-                      {linkItem("TMDB", tmdbUrl, <SiThemoviedatabase className='size-4' />)}
+-                      {imdbUrl ? linkItem("IMDb", imdbUrl, <SiImdb className='size-4' />) : null}
+-                      {linkItem("Letterboxd", letterboxdUrl, <SiLetterboxd className='size-4' />)}
+-                      {linkItem("Rotten Tomatoes", rtUrl, <SiRottentomatoes className='size-4' />)}
+-                      {linkItem("Metacritic", metacriticUrl, <SiMetacritic className='size-4' />)}
+-                    </div>
+-                  </div>
++                        <div className='min-h-0 space-y-4 overflow-y-auto p-3'>
++                          <div className='grid grid-cols-2 gap-2'>
++                            <button
++                              type='button'
++                              onClick={copyLink}
++                              className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
++                            >
++                              <Copy className='size-4' />
++                              Copy link
++                            </button>
++                            <button
++                              type='button'
++                              onClick={nativeShare}
++                              className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
++                            >
++                              <Share2 className='size-4' />
++                              Share…
++                            </button>
++                          </div>
+ 
+-                  {hasSocial ? (
+-                    <div>
+-                      <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
+-                        Social
+-                      </p>
+-                      <div className='space-y-0.5'>
+-                        {facebookUrl
+-                          ? linkItem("Facebook", facebookUrl, <SiFacebook className='size-4' />)
+-                          : null}
+-                        {instagramUrl
+-                          ? linkItem("Instagram", instagramUrl, <SiInstagram className='size-4' />)
+-                          : null}
+-                        {twitterUrl ? linkItem("X", twitterUrl, <SiX className='size-4' />) : null}
++                          <div>
++                            <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
++                              Platforms
++                            </p>
++                            <div className='space-y-0.5'>
++                              {linkItem("TMDB", tmdbUrl, <SiThemoviedatabase className='size-4' />)}
++                              {imdbUrl ? linkItem("IMDb", imdbUrl, <SiImdb className='size-4' />) : null}
++                              {linkItem("Letterboxd", letterboxdUrl, <SiLetterboxd className='size-4' />)}
++                              {linkItem("Rotten Tomatoes", rtUrl, <SiRottentomatoes className='size-4' />)}
++                              {linkItem("Metacritic", metacriticUrl, <SiMetacritic className='size-4' />)}
++                            </div>
++                          </div>
++
++                          {hasSocial ? (
++                            <div>
++                              <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
++                                Social
++                              </p>
++                              <div className='space-y-0.5'>
++                                {facebookUrl
++                                  ? linkItem("Facebook", facebookUrl, <SiFacebook className='size-4' />)
++                                  : null}
++                                {instagramUrl
++                                  ? linkItem("Instagram", instagramUrl, <SiInstagram className='size-4' />)
++                                  : null}
++                                {twitterUrl ? linkItem("X", twitterUrl, <SiX className='size-4' />) : null}
++                              </div>
++                            </div>
++                          ) : null}
++                        </div>
+                       </div>
+-                    </div>
+-                  ) : null}
++                    </motion.div>
++                  </div>
+                 </div>
+-              </div>
+-            </motion.div>
+-          </>
+-        )}
+-      </AnimatePresence>
++              )}
++            </AnimatePresence>,
++            document.body,
++          )
++        : null}
+     </>
+   );
+ }
+-

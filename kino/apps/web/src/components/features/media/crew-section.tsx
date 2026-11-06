@@ -1,10 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { posterUrl } from "@/lib/tmdb/config";
-import { MediaImage } from "@/components/common/media-image";
 import type { CreditPerson } from "@/lib/tmdb/details";
+import { MAX_VISIBLE, PeopleSection, type PersonItem } from "./people-section";
 
 type CrewSectionProps = {
   crew: CreditPerson[];
@@ -22,69 +19,71 @@ const PRIORITY_JOBS = [
   "Editor",
 ];
 
-function pickCrew(crew: CreditPerson[], limit = 12) {
-  const scored = [...crew].map(c => {
-    const job = c.job ?? "";
-    const idx = PRIORITY_JOBS.indexOf(job);
-    return { ...c, _score: idx === -1 ? 100 : idx };
-  });
+function jobScore(job: string | null | undefined) {
+  const idx = PRIORITY_JOBS.indexOf(job ?? "");
+  return idx === -1 ? 100 : idx;
+}
 
-  const seen = new Set<string>();
-  const unique = scored.filter(c => {
-    const key = `${c.id}-${c.job}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+function pickCrew(crew: CreditPerson[]): PersonItem[] {
+  // Group every credit by person so Nolan (Director / Writer / Producer)
+  // becomes a single row with roles merged.
+  const byId = new Map<
+    number,
+    {
+      id: number;
+      name: string;
+      profilePath: string | null | undefined;
+      jobs: string[];
+      bestScore: number;
+    }
+  >();
 
-  return unique.sort((a, b) => a._score - b._score).slice(0, limit);
+  for (const person of crew) {
+    const job = person.job?.trim();
+    const existing = byId.get(person.id);
+
+    if (!existing) {
+      byId.set(person.id, {
+        id: person.id,
+        name: person.name,
+        profilePath: person.profile_path,
+        jobs: job ? [job] : [],
+        bestScore: jobScore(job),
+      });
+      continue;
+    }
+
+    if (job && !existing.jobs.includes(job)) {
+      existing.jobs.push(job);
+    }
+    // Prefer a profile photo when later credits include one.
+    if (!existing.profilePath && person.profile_path) {
+      existing.profilePath = person.profile_path;
+    }
+    existing.bestScore = Math.min(existing.bestScore, jobScore(job));
+  }
+
+  // Within each person, order jobs by priority (Director before Writer, etc.).
+  for (const entry of byId.values()) {
+    entry.jobs.sort((a, b) => jobScore(a) - jobScore(b));
+  }
+
+  return [...byId.values()]
+    .sort((a, b) => a.bestScore - b.bestScore || a.name.localeCompare(b.name))
+    .slice(0, MAX_VISIBLE)
+    .map(entry => ({
+      key: String(entry.id),
+      id: entry.id,
+      name: entry.name,
+      role: entry.jobs.length ? entry.jobs.join(", ") : null,
+      profilePath: entry.profilePath,
+    }));
 }
 
 export function CrewSection({ crew }: CrewSectionProps) {
-  const top = pickCrew(crew);
-  if (!top.length) return null;
+  const total = new Set(crew.map(p => p.id)).size;
 
-  return (
-    <section className='mx-auto max-w-6xl px-4 py-10 sm:px-6'>
-      <h2 className='mb-6 text-xl font-semibold tracking-tight'>Crew</h2>
-
-      <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'>
-        {top.map((person, i) => {
-          const img = posterUrl(person.profile_path, "w185");
-          return (
-            <motion.div
-              key={`${person.id}-${person.job ?? i}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.3,
-                delay: i * 0.02,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
-              <Link
-                href={`/person/${person.id}`}
-                className='group flex flex-col gap-2 transition-opacity hover:opacity-90'
-              >
-                <div className='relative aspect-2/3 overflow-hidden rounded-lg border border-border/50 bg-muted'>
-                  <MediaImage
-                    src={img}
-                    alt={person.name}
-                    variant='profile'
-                    imgClassName='transition-transform duration-300 group-hover:scale-105'
-                  />
-                </div>
-                <div className='min-w-0 space-y-0.5'>
-                  <p className='truncate text-sm font-medium'>{person.name}</p>
-                  {person.job ? (
-                    <p className='truncate text-xs text-muted-foreground'>{person.job}</p>
-                  ) : null}
-                </div>
-              </Link>
-            </motion.div>
-          );
-        })}
-      </div>
-    </section>
-  );
+  return <PeopleSection title='Crew' people={pickCrew(crew)} total={total} />;
 }
+
+

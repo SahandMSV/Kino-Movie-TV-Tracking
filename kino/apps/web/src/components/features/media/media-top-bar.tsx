@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Copy, ExternalLink, Film, MoreHorizontal, Share2, Tv, X } from "lucide-react";
 import {
@@ -67,6 +68,17 @@ export function MediaTopBar({
   const twitterUrl = twitterId ? `https://x.com/${twitterId}` : null;
 
   const hasSocial = !!(facebookUrl || instagramUrl || twitterUrl);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -161,97 +173,103 @@ export function MediaTopBar({
         </div>
       </div>
 
-      <AnimatePresence>
-        {open && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className='fixed inset-0 z-50 bg-background/60 backdrop-blur-sm'
-              onClick={() => setOpen(false)}
-            />
-
-            <motion.div
-              initial={{ opacity: 0, y: 12, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.98 }}
-              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              className='fixed left-1/2 top-[18%] z-50 w-full max-w-md -translate-x-1/2 px-4'
-            >
-              <div className='overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl'>
-                <div className='flex items-center justify-between border-b border-border/50 px-4 py-3'>
-                  <div className='min-w-0'>
-                    <p className='text-sm font-semibold tracking-tight'>Share</p>
-                    <p className='truncate text-xs text-muted-foreground'>{shareTitle}</p>
-                  </div>
-                  <Button
-                    variant='ghost'
-                    size='icon-sm'
+      {typeof document !== "undefined"
+        ? createPortal(
+            <AnimatePresence>
+              {open && (
+                <div className='fixed inset-x-0 bottom-0 top-[57px] z-50'>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className='absolute inset-0 bg-background/60 backdrop-blur-sm'
                     onClick={() => setOpen(false)}
-                    aria-label='Close'
-                  >
-                    <X className='size-4' />
-                  </Button>
-                </div>
+                  />
 
-                <div className='max-h-[70vh] space-y-4 overflow-y-auto p-3'>
-                  <div className='grid grid-cols-2 gap-2'>
-                    <button
-                      type='button'
-                      onClick={copyLink}
-                      className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
+                  <div className='pointer-events-none absolute inset-0 flex items-center justify-center p-4'>
+                    <motion.div
+                      initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                      className='pointer-events-auto w-full max-w-md'
                     >
-                      <Copy className='size-4' />
-                      Copy link
-                    </button>
-                    <button
-                      type='button'
-                      onClick={nativeShare}
-                      className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
-                    >
-                      <Share2 className='size-4' />
-                      Share…
-                    </button>
-                  </div>
+                      <div className='flex max-h-full flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl'>
+                        <div className='flex items-center justify-between border-b border-border/50 px-4 py-3'>
+                          <div className='min-w-0'>
+                            <p className='text-sm font-semibold tracking-tight'>Share</p>
+                            <p className='truncate text-xs text-muted-foreground'>{shareTitle}</p>
+                          </div>
+                          <Button
+                            variant='ghost'
+                            size='icon-sm'
+                            onClick={() => setOpen(false)}
+                            aria-label='Close'
+                          >
+                            <X className='size-4' />
+                          </Button>
+                        </div>
 
-                  <div>
-                    <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
-                      Platforms
-                    </p>
-                    <div className='space-y-0.5'>
-                      {linkItem("TMDB", tmdbUrl, <SiThemoviedatabase className='size-4' />)}
-                      {imdbUrl ? linkItem("IMDb", imdbUrl, <SiImdb className='size-4' />) : null}
-                      {linkItem("Letterboxd", letterboxdUrl, <SiLetterboxd className='size-4' />)}
-                      {linkItem("Rotten Tomatoes", rtUrl, <SiRottentomatoes className='size-4' />)}
-                      {linkItem("Metacritic", metacriticUrl, <SiMetacritic className='size-4' />)}
-                    </div>
-                  </div>
+                        <div className='min-h-0 space-y-4 overflow-y-auto p-3'>
+                          <div className='grid grid-cols-2 gap-2'>
+                            <button
+                              type='button'
+                              onClick={copyLink}
+                              className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
+                            >
+                              <Copy className='size-4' />
+                              Copy link
+                            </button>
+                            <button
+                              type='button'
+                              onClick={nativeShare}
+                              className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
+                            >
+                              <Share2 className='size-4' />
+                              Share…
+                            </button>
+                          </div>
 
-                  {hasSocial ? (
-                    <div>
-                      <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
-                        Social
-                      </p>
-                      <div className='space-y-0.5'>
-                        {facebookUrl
-                          ? linkItem("Facebook", facebookUrl, <SiFacebook className='size-4' />)
-                          : null}
-                        {instagramUrl
-                          ? linkItem("Instagram", instagramUrl, <SiInstagram className='size-4' />)
-                          : null}
-                        {twitterUrl ? linkItem("X", twitterUrl, <SiX className='size-4' />) : null}
+                          <div>
+                            <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
+                              Platforms
+                            </p>
+                            <div className='space-y-0.5'>
+                              {linkItem("TMDB", tmdbUrl, <SiThemoviedatabase className='size-4' />)}
+                              {imdbUrl ? linkItem("IMDb", imdbUrl, <SiImdb className='size-4' />) : null}
+                              {linkItem("Letterboxd", letterboxdUrl, <SiLetterboxd className='size-4' />)}
+                              {linkItem("Rotten Tomatoes", rtUrl, <SiRottentomatoes className='size-4' />)}
+                              {linkItem("Metacritic", metacriticUrl, <SiMetacritic className='size-4' />)}
+                            </div>
+                          </div>
+
+                          {hasSocial ? (
+                            <div>
+                              <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
+                                Social
+                              </p>
+                              <div className='space-y-0.5'>
+                                {facebookUrl
+                                  ? linkItem("Facebook", facebookUrl, <SiFacebook className='size-4' />)
+                                  : null}
+                                {instagramUrl
+                                  ? linkItem("Instagram", instagramUrl, <SiInstagram className='size-4' />)
+                                  : null}
+                                {twitterUrl ? linkItem("X", twitterUrl, <SiX className='size-4' />) : null}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
-                    </div>
-                  ) : null}
+                    </motion.div>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              )}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
     </>
   );
 }
-
