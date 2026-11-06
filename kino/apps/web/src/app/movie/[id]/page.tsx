@@ -5,14 +5,12 @@ import { MediaHero } from "@/components/features/media/media-hero";
 import { CastSection } from "@/components/features/media/cast-section";
 import { CrewSection } from "@/components/features/media/crew-section";
 import { VideosSection } from "@/components/features/media/videos-section";
-import { TrackingControls } from "@/components/features/media/tracking-controls";
-import { RatingNotes } from "@/components/features/media/rating-notes";
+import { FloatingTracking } from "@/components/features/media/floating-tracking";
 import { CollectionSection } from "@/components/features/media/collection-section";
 import { RecommendationsSection } from "@/components/features/media/recommendations-section";
 import { getMovie, getCollection } from "@/lib/tmdb/details";
 import { getMovieRecommendations } from "@/lib/tmdb/discover";
 import { getWatchEntryForMedia } from "@/lib/actions/tracking";
-import { deriveReleaseStatus } from "@/lib/tmdb/release-status";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -37,8 +35,6 @@ export default async function MoviePage({ params }: Props) {
       : Promise.resolve(undefined),
   ]);
 
-  const release = deriveReleaseStatus(movie.release_dates?.results);
-
   const cast = movie.credits?.cast ?? [];
   const crew = movie.credits?.crew ?? [];
   const videos = movie.videos?.results ?? [];
@@ -47,10 +43,11 @@ export default async function MoviePage({ params }: Props) {
     <div className='flex min-h-screen flex-col'>
       <AppNavbar user={session?.user ?? null} />
 
-      <main className='flex-1 pb-16'>
+      <main className='flex-1 pb-28'>
         <MediaHero
+          tmdbId={tmdbId}
           title={movie.title}
-          tagline={movie.tagline}
+          popularity={movie.popularity}
           overview={movie.overview}
           posterPath={movie.poster_path}
           backdropPath={movie.backdrop_path}
@@ -62,25 +59,6 @@ export default async function MoviePage({ params }: Props) {
           status={movie.status}
           mediaType='movie'
         />
-
-        {session?.user ? (
-          <>
-            <TrackingControls
-              tmdbId={tmdbId}
-              mediaType='movie'
-              title={movie.title}
-              posterPath={movie.poster_path}
-              initialStatus={watchEntry?.status ?? null}
-            />
-            <RatingNotes
-              tmdbId={tmdbId}
-              mediaType='movie'
-              initialRating={watchEntry?.rating ?? null}
-              initialNotes={watchEntry?.notes ?? null}
-              hasStatus={!!watchEntry?.status}
-            />
-          </>
-        ) : null}
 
         {movie.belongs_to_collection ? (
           <CollectionSection
@@ -95,6 +73,15 @@ export default async function MoviePage({ params }: Props) {
         <VideosSection videos={videos} />
         <RecommendationsSection movies={recommendations.results} />
       </main>
+
+      <FloatingTracking
+        tmdbId={tmdbId}
+        mediaType='movie'
+        title={movie.title}
+        posterPath={movie.poster_path}
+        initialStatus={watchEntry?.status ?? null}
+        isLoggedIn={!!session?.user}
+      />
     </div>
   );
 }

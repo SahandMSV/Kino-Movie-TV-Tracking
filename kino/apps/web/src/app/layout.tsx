@@ -36,7 +36,7 @@ export default async function RootLayout({
           <TolgeeNextProvider language={locale} staticData={staticData}>
             <Suspense fallback={null}>{children}</Suspense>
           </TolgeeNextProvider>
-          <Toaster position='bottom-right' richColors />
+          <Toaster position='bottom-left' richColors />
         </ThemeProvider>
       </body>
     </html>

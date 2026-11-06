@@ -5,8 +5,7 @@ import { MediaHero } from "@/components/features/media/media-hero";
 import { CastSection } from "@/components/features/media/cast-section";
 import { CrewSection } from "@/components/features/media/crew-section";
 import { VideosSection } from "@/components/features/media/videos-section";
-import { TrackingControls } from "@/components/features/media/tracking-controls";
-import { RatingNotes } from "@/components/features/media/rating-notes";
+import { FloatingTracking } from "@/components/features/media/floating-tracking";
 import { RecommendationsSection } from "@/components/features/media/recommendations-section";
 import { EpisodeProgress } from "@/components/features/media/episode-progress";
 import { getTv } from "@/lib/tmdb/details";
@@ -43,10 +42,11 @@ export default async function TvPage({ params }: Props) {
     <div className='flex min-h-screen flex-col'>
       <AppNavbar user={session?.user ?? null} />
 
-      <main className='flex-1 pb-16'>
+      <main className='flex-1 pb-28'>
         <MediaHero
+          tmdbId={tmdbId}
           title={show.name}
-          tagline={show.tagline}
+          popularity={show.popularity}
           overview={show.overview}
           posterPath={show.poster_path}
           backdropPath={show.backdrop_path}
@@ -63,30 +63,14 @@ export default async function TvPage({ params }: Props) {
         />
 
         {session?.user ? (
-          <>
-            <TrackingControls
-              tmdbId={tmdbId}
-              mediaType='tv'
-              title={show.name}
-              posterPath={show.poster_path}
-              initialStatus={watchEntry?.status ?? null}
-            />
-            <RatingNotes
-              tmdbId={tmdbId}
-              mediaType='tv'
-              initialRating={watchEntry?.rating ?? null}
-              initialNotes={watchEntry?.notes ?? null}
-              hasStatus={!!watchEntry?.status}
-            />
-            <EpisodeProgress
-              tmdbId={show.id}
-              title={show.name}
-              posterPath={show.poster_path}
-              seasons={show.seasons ?? []}
-              initialWatched={watchEntry?.watchedEpisodes ?? []}
-              hasStatus={!!watchEntry?.status}
-            />
-          </>
+          <EpisodeProgress
+            tmdbId={show.id}
+            title={show.name}
+            posterPath={show.poster_path}
+            seasons={show.seasons ?? []}
+            initialWatched={watchEntry?.watchedEpisodes ?? []}
+            hasStatus={!!watchEntry?.status}
+          />
         ) : null}
 
         <CastSection cast={cast} />
@@ -94,6 +78,15 @@ export default async function TvPage({ params }: Props) {
         <VideosSection videos={videos} />
         <RecommendationsSection shows={recommendations.results} />
       </main>
+
+      <FloatingTracking
+        tmdbId={tmdbId}
+        mediaType='tv'
+        title={show.name}
+        posterPath={show.poster_path}
+        initialStatus={watchEntry?.status ?? null}
+        isLoggedIn={!!session?.user}
+      />
     </div>
   );
 }

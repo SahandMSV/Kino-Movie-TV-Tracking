@@ -2,67 +2,95 @@
 
 ## Overview
 
-Kino has a small custom i18n setup rather than pulling in a full library.
-The main goals were type safety, simplicity, and not locking us into
-anything.
+Kino uses [Tolgee](https://tolgee.io) with the ICU message format for interface translations. Supported languages today: **English (`en`)**, **German (`de`)**, **French (`fr`)** and **Spanish (`es`)**. English is the default.
 
-Translation access is isolated behind a single hook, so if we ever want
-to move to something like next-intl down the line, we can do it without
-touching every component that uses translated strings.
+There are two separate language concerns:
 
-## Goals
+1. **Interface language**: the text of Kino itself, handled by Tolgee and the `messages/*.json` files.
+2. **Content language**: titles, overviews and taglines from TMDB, plus artwork, controlled by `lib/tmdb/locale.ts`.
 
-Type-safe keys with IDE autocomplete were the main priority — we wanted
-invalid keys to fail at compile time, not show up as missing strings in
-prod. Beyond that: keep the runtime footprint small, keep translations
-centralized in one place, and don't make migration painful later.
+> The README is also available in Persian ([README.fa.md](../../README.fa.md)). Persian is not yet a language of the app itself.
 
-## Directory Structure
+## Files
 
-```
-
-src/
-├── hooks/
-│ └── use-translation.ts
-│
-├── lib/
-│ ├── translations.ts
-│ ├── translation-types.ts
-│ └── i18n.ts
-│
-└── components/
-└── language-provider.tsx
-
+```bash
+apps/web/
+├── messages/
+│   ├── en.json            # Source of truth
+│   ├── de.json
+│   ├── fr.json
+│   └── es.json
+└── src/
+    ├── tolgee/
+    │   ├── shared.ts      # Languages, default language, Tolgee base config
+    │   ├── language.ts    # Server Actions: get/set the language cookie
+    │   ├── server.tsx     # getTolgee, getTranslate, T for Server Components
+    │   └── client.tsx     # TolgeeNextProvider for Client Components
+    ├── lib/tmdb/locale.ts # Maps UI language to TMDB locale
+    └── components/
+        ├── language-switcher.tsx
+        └── features/settings/settings-form.tsx
 ```
 
 ## How it flows
 
-A component calls `useTranslation()`, which gives you `t()`. Calling
-`t("home.title")` looks up the key via `getNestedValue()` against
-`translations[currentLanguage]` and hands back the localized string.
+1. `getLanguage()` (`tolgee/language.ts`) reads the `kino_lang` cookie. If it is missing or invalid it detects the language from `Accept-Language`, then falls back to `en`.
+2. `RootLayout` resolves the language, loads the required static data and passes both to `TolgeeNextProvider`, which also sets `<html lang>`.
+3. **Server Components** use `const t = await getTranslate()`.
+4. **Client Components** use `const { t } = useTranslate()` from `@tolgee/react`.
+5. Changing language (navbar switcher or Settings) calls `setLanguage(code)` to store the cookie, then `tolgee.changeLanguage(code)` and `router.refresh()`. The Settings page also saves the choice to the user's `preferences.language`.
 
-## Translation Keys
+Translations are bundled as static JSON (`staticData` in `tolgee/shared.ts`), so the app works without a Tolgee account. `NEXT_PUBLIC_TOLGEE_API_URL` and `NEXT_PUBLIC_TOLGEE_API_KEY` are only needed for in-context editing.
 
-Keys are generated from the English locale file, so things like
-`home.title`, `home.subtitle`, or `common.login` all come from there.
-If you typo a key or reference one that doesn't exist, it just won't
-compile — no silent fallback to English or blank strings.
+## Message keys
 
-## Adding a new translation
+Keys are grouped by area: `common`, `home`, `nav`, `auth`, `not_found`, `watchlist`, `progress`, `status`, `collection`, `episodes`, `settings`.
 
-1. Add the string to the English locale first.
-2. Add the same key to every other locale file.
-3. `TranslationKey` updates automatically — no manual type editing needed.
-4. Call it with `t()` wherever you need it.
+Examples:
 
-## Language persistence
+```tsx
+t("home.title");
+t("home.welcome_back", { name });
+t("collection.part_count", { count: 3 });          // ICU plural
+t("episodes.subtitle", { watched: 4, total: 10 });
+t(`status.${entry.status}`);                        // plan_to_watch, watching, ...
+```
 
-Selected language gets saved to localStorage and read back when the
-provider initializes, so it sticks across reloads.
+Keys are plain strings, so a typo is not caught at compile time; missing keys are visible at runtime.
+
+## Adding a translation key
+
+1. Add the key to `messages/en.json`.
+2. Add the same key to `de.json`, `fr.json` and `es.json`. Keep the structure identical.
+3. Use `t("group.key")` in the component.
+4. Use ICU syntax for variables and plurals, for example `{count, plural, one {# film} other {# films}}`.
+
+## Adding a language
+
+1. Create `messages/<code>.json` with every key from `en.json`.
+2. In `tolgee/shared.ts`: add the code to `ALL_LANGUAGES` and a loader to `staticData`.
+3. In `lib/tmdb/locale.ts`: add the TMDB locale to `TMDB_LOCALE` (for example `fa: "fa-IR"`).
+4. Add its display name to the `labels` map in `language-switcher.tsx` and `LANG_LABELS` in `settings-form.tsx`.
+5. The Zod schema in `lib/actions/settings.ts` derives from `ALL_LANGUAGES`, so no change is needed there.
+6. For a right-to-left language such as Persian, also set `dir="rtl"` on `<html>` in `app/layout.tsx` and review layouts that use left/right utilities.
+
+## Content language and posters
+
+- `resolveUiLanguage()` returns the interface language; it is used to pick translated titles, overviews and taglines from TMDB's `translations` data.
+- `resolveTmdbLanguage()` returns the TMDB locale used for requests.
+- **Always use English posters** (`preferences.lockEnglishPosters`, default on) makes `resolveTmdbLanguage()` return `en-US`. List endpoints (trending, popular, recommendations, search) fetch both localized and English results and keep the English artwork. Signed-out visitors always get English artwork.
+
+## Known gaps
+
+Several strings are still hard-coded in English and should be moved into `messages/*.json`:
+
+- Tracking controls and toasts (`tracking-controls.tsx`), rating and notes (`rating-notes.tsx`)
+- Section headings "Cast", "Crew", "Videos", "More like this", "Acting"
+- Search modal placeholder and empty states, account menu label, "Settings" item in the navbar
+- Release badge text, hero metadata ("season(s)", "episode(s)", "votes", "Born")
+- Not-found page overrides, status page, validation messages from Server Actions
+- Theme toggle labels (System / Light / Dark)
 
 ## Future plans
 
-We're keeping an eye on next-intl and next-international as possible
-upgrades. Since every component goes through `useTranslation()` rather
-than importing translations directly, swapping the internals later
-shouldn't require touching component code.
+Persian as a fourth-plus app language (with RTL support), and moving the remaining hard-coded strings into the message files.

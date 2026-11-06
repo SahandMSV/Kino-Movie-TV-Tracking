@@ -22,6 +22,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { SearchModal } from "./search-modal";
 import { cn } from "@/lib/utils";
+import { glass } from "@/lib/glass";
 
 type AppNavbarProps = {
   user?: {
@@ -52,7 +53,7 @@ export function AppNavbar({ user }: AppNavbarProps) {
 
   return (
     <>
-      <header className='sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl'>
+      <header className={cn("sticky top-0 z-40 border-b", glass)}>
         <nav className='relative mx-auto flex h-14 max-w-6xl items-center px-4 sm:px-6'>
           <div className='flex min-w-0 flex-1 items-center'>
             <Link href='/' className='text-sm font-semibold tracking-tight'>
