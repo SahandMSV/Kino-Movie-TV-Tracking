@@ -44,7 +44,6 @@ export function MediaImage({
   useEffect(() => {
     const img = imgRef.current;
     if (!img || !src) return;
-
     if (img.complete && img.naturalWidth > 0) {
       setLoaded(true);
     }
@@ -86,10 +85,12 @@ export function MediaImage({
         sizes={sizes}
         loading={priority ? "eager" : "lazy"}
         decoding='async'
+        draggable={false}
+        onDragStart={e => e.preventDefault()}
         onLoad={() => setLoaded(true)}
         onError={() => setFailed(true)}
         className={cn(
-          "h-full w-full object-cover transition-[opacity,filter] duration-500 ease-out",
+          "h-full w-full object-cover transition-[opacity,filter] duration-500 ease-out select-none",
           loaded ? "opacity-100 blur-0" : "opacity-0 blur-md",
           imgClassName,
         )}

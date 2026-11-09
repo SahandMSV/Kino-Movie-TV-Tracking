@@ -131,3 +131,10 @@ main {
 input[type="password"] {
   -webkit-text-security: square; /* disc | circle | square */
 }
+
+/* Prevent image text-selection and native drag ghosts */
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}

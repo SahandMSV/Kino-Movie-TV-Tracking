@@ -63,4 +63,3 @@ export function CastSection({ cast }: CastSectionProps) {
 
   return <PeopleSection title='Cast' people={pickCast(cast)} total={total} />;
 }
-

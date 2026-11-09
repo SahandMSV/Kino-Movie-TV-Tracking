@@ -44,9 +44,10 @@ export default async function HomePage() {
   const t = await getTranslate();
   const isLoggedIn = !!session?.user;
 
-  const [watchingRes, watchlistRes, trending, popularMovies, popularTv] = await Promise.all([
+  // Continue uses saved titles (plan_to_watch) — "watching" status no longer exists
+  const [savedRes, watchlistRes, trending, popularMovies, popularTv] = await Promise.all([
     isLoggedIn
-      ? listWatchEntriesByStatuses(["watching"], { limit: 12 })
+      ? listWatchEntriesByStatuses(["plan_to_watch"], { limit: 12 })
       : Promise.resolve({ entries: [], nextCursor: null }),
     isLoggedIn
       ? listWatchEntriesByStatuses(["plan_to_watch"], { limit: 12 })
@@ -56,12 +57,12 @@ export default async function HomePage() {
     getPopularTv().catch(() => ({ results: [] })),
   ]);
 
-  const continueWatching: CarouselItem[] = watchingRes.entries.map(e => ({
+  const continueWatching: CarouselItem[] = savedRes.entries.map(e => ({
     id: e.tmdbId,
     title: e.title,
     posterPath: e.posterPath,
     mediaType: e.mediaType,
-    subtitle: "Watching",
+    subtitle: "Saved",
   }));
 
   const watchlistItems: CarouselItem[] = watchlistRes.entries.map(e => ({

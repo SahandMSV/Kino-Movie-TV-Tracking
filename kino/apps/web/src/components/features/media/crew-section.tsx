@@ -85,5 +85,3 @@ export function CrewSection({ crew }: CrewSectionProps) {
 
   return <PeopleSection title='Crew' people={pickCrew(crew)} total={total} />;
 }
-
-

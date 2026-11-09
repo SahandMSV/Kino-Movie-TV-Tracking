@@ -1,12 +1,6 @@
 import { Schema, model, models, type InferSchemaType, Types } from "mongoose";
 
-export const WATCH_STATUSES = [
-  "plan_to_watch",
-  "watching",
-  "watched",
-  "dropped",
-  "on_hold",
-] as const;
+export const WATCH_STATUSES = ["plan_to_watch", "watched", "dropped"] as const;
 
 export type WatchStatus = (typeof WATCH_STATUSES)[number];
 
@@ -76,7 +70,7 @@ const WatchEntrySchema = new Schema(
   },
 );
 
-WatchEntrySchema.index({ userId: 1, mediaType: 1, tmdbId: 1 }, { unique: true });
+WatchEntrySchema.index({ userId: 1, tmdbId: 1, mediaType: 1 }, { unique: true });
 WatchEntrySchema.index({ userId: 1, status: 1, updatedAt: -1 });
 
 export type WatchEntryDocument = InferSchemaType<typeof WatchEntrySchema> & {
@@ -88,4 +82,4 @@ export type WatchedEpisode = {
   episode: number;
 };
 
-export const WatchEntry = models.WatchEntry || model("WatchEntry", WatchEntrySchema);
+export const WatchEntry = models.WatchEntry ?? model("WatchEntry", WatchEntrySchema);

@@ -166,7 +166,7 @@ export async function setRatingAndNotes(input: {
 
     const existing = await WatchEntry.findOne({ userId, tmdbId, mediaType }).lean();
     if (!existing) {
-      return { error: "Add a status first (Watchlist / Watching / Watched…)" };
+      return { error: "Save this title before adding a rating or notes" };
     }
 
     const update: Record<string, unknown> = {};
@@ -245,7 +245,7 @@ export async function toggleEpisodeWatched(input: {
 
     const existing = await WatchEntry.findOne({ userId, tmdbId, mediaType: "tv" }).lean();
     if (!existing) {
-      return { error: "Add a status first (Watchlist / Watching / Watched…)" };
+      return { error: "Save this title before tracking episodes" };
     }
 
     const current = uniqueEpisodes(toPlainEpisodes(existing.watchedEpisodes));
@@ -256,8 +256,9 @@ export async function toggleEpisodeWatched(input: {
       ? current.filter(e => episodeKey(e) !== key)
       : uniqueEpisodes([...current, { season, episode }]);
 
-    const shouldPromote =
-      !exists && (existing.status === "plan_to_watch" || existing.status === "on_hold");
+    // Marking episodes on a dropped show brings it back to Saved.
+    // plan_to_watch and watched stay as they are.
+    const shouldPromote = existing != null && existing.status === "dropped";
 
     const entry = await WatchEntry.findOneAndUpdate(
       { userId, tmdbId, mediaType: "tv" },
@@ -266,7 +267,7 @@ export async function toggleEpisodeWatched(input: {
           watchedEpisodes: next,
           title,
           posterPath: posterPath ?? (existing.posterPath as string | null) ?? null,
-          ...(shouldPromote ? { status: "watching" as WatchStatus, watchedAt: null } : {}),
+          ...(shouldPromote ? { status: "plan_to_watch" as WatchStatus, watchedAt: null } : {}),
         },
       },
       { new: true },
@@ -310,7 +311,7 @@ export async function setSeasonWatched(input: {
 
     const existing = await WatchEntry.findOne({ userId, tmdbId, mediaType: "tv" }).lean();
     if (!existing) {
-      return { error: "Add a status first (Watchlist / Watching / Watched…)" };
+      return { error: "Save this title before tracking episodes" };
     }
 
     const current = uniqueEpisodes(toPlainEpisodes(existing.watchedEpisodes));
@@ -319,8 +320,9 @@ export async function setSeasonWatched(input: {
       ? uniqueEpisodes([...withoutSeason, ...episodes.map(ep => ({ season, episode: ep }))])
       : withoutSeason;
 
-    const shouldPromote =
-      watched && (existing.status === "plan_to_watch" || existing.status === "on_hold");
+    // Marking episodes on a dropped show brings it back to Saved.
+    // plan_to_watch and watched stay as they are.
+    const shouldPromote = existing != null && existing.status === "dropped";
 
     const entry = await WatchEntry.findOneAndUpdate(
       { userId, tmdbId, mediaType: "tv" },
@@ -329,7 +331,7 @@ export async function setSeasonWatched(input: {
           watchedEpisodes: next,
           title,
           posterPath: posterPath ?? (existing.posterPath as string | null) ?? null,
-          ...(shouldPromote ? { status: "watching" as WatchStatus, watchedAt: null } : {}),
+          ...(shouldPromote ? { status: "plan_to_watch" as WatchStatus, watchedAt: null } : {}),
         },
       },
       { new: true },

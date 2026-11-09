@@ -1,9 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Copy, ExternalLink, Film, MoreHorizontal, Share2, Tv, X } from "lucide-react";
+import {
+  Ban,
+  Copy,
+  ExternalLink,
+  Film,
+  Loader2,
+  MoreHorizontal,
+  Share2,
+  Tv,
+  X,
+} from "lucide-react";
 import {
   SiImdb,
   SiLetterboxd,
@@ -17,15 +28,21 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { glassInteractive } from "@/lib/glass";
+import { setWatchStatus, removeWatchEntry } from "@/lib/actions/tracking";
+import type { WatchStatus } from "@/lib/db/models/watch-entry";
+import { cn } from "@/lib/utils";
 
 type MediaTopBarProps = {
   tmdbId: number;
   mediaType: "movie" | "tv";
   title?: string;
+  posterPath?: string | null;
   imdbId?: string | null;
   facebookId?: string | null;
   instagramId?: string | null;
   twitterId?: string | null;
+  userStatus?: WatchStatus | null;
+  isLoggedIn?: boolean;
 };
 
 const glass = glassInteractive;
@@ -34,12 +51,19 @@ export function MediaTopBar({
   tmdbId,
   mediaType,
   title,
+  posterPath,
   imdbId,
   facebookId,
   instagramId,
   twitterId,
+  userStatus = null,
+  isLoggedIn = false,
 }: MediaTopBarProps) {
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const [shareOpen, setShareOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [status, setStatus] = useState<WatchStatus | null>(userStatus);
+  const [isPending, startTransition] = useTransition();
 
   const tmdbUrl = `https://www.themoviedb.org/${mediaType}/${tmdbId}`;
   const TypeIcon = mediaType === "tv" ? Tv : Film;
@@ -70,24 +94,29 @@ export function MediaTopBar({
   const hasSocial = !!(facebookUrl || instagramUrl || twitterUrl);
 
   useEffect(() => {
-    if (!open) return;
+    setStatus(userStatus);
+  }, [userStatus]);
 
+  useEffect(() => {
+    if (!shareOpen && !moreOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [open]);
+  }, [shareOpen, moreOpen]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!shareOpen && !moreOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setShareOpen(false);
+        setMoreOpen(false);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [shareOpen, moreOpen]);
 
   const copyLink = async () => {
     try {
@@ -114,7 +143,44 @@ export function MediaTopBar({
     }
   };
 
-  const comingSoon = () => toast.info("Coming soon");
+  const drop = () => {
+    if (!isLoggedIn) {
+      toast.error("Sign in to track titles");
+      router.push("/register");
+      return;
+    }
+
+    startTransition(async () => {
+      if (status === "dropped") {
+        const res = await removeWatchEntry({ tmdbId, mediaType });
+        if (res.error) {
+          toast.error(res.error);
+          return;
+        }
+        setStatus(null);
+        toast.success("Removed from tracking");
+        setMoreOpen(false);
+        return;
+      }
+
+      const res = await setWatchStatus({
+        tmdbId,
+        mediaType,
+        status: "dropped",
+        title: title ?? typeLabel,
+        posterPath,
+      });
+
+      if (res.error) {
+        toast.error(res.error);
+        return;
+      }
+
+      setStatus(res.status ?? "dropped");
+      toast.success("Dropped");
+      setMoreOpen(false);
+    });
+  };
 
   const linkItem = (label: string, href: string, icon: React.ReactNode) => (
     <a
@@ -130,6 +196,50 @@ export function MediaTopBar({
       <span className='font-medium'>{label}</span>
     </a>
   );
+
+  const sheet = (open: boolean, onClose: () => void, heading: string, body: React.ReactNode) =>
+    typeof document !== "undefined"
+      ? createPortal(
+          <AnimatePresence>
+            {open ? (
+              <div className='fixed inset-x-0 bottom-0 top-[57px] z-50'>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className='absolute inset-0 bg-background/60 backdrop-blur-sm'
+                  onClick={onClose}
+                />
+
+                <div className='pointer-events-none absolute inset-0 flex items-center justify-center p-4'>
+                  <motion.div
+                    initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                    transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                    className='pointer-events-auto w-full max-w-md'
+                  >
+                    <div className='flex max-h-full flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl'>
+                      <div className='flex items-center justify-between border-b border-border/50 px-4 py-3'>
+                        <div className='min-w-0'>
+                          <p className='text-sm font-semibold tracking-tight'>{heading}</p>
+                          <p className='truncate text-xs text-muted-foreground'>{shareTitle}</p>
+                        </div>
+                        <Button variant='ghost' size='icon-sm' onClick={onClose} aria-label='Close'>
+                          <X className='size-4' />
+                        </Button>
+                      </div>
+                      <div className='min-h-0 space-y-4 overflow-y-auto p-3'>{body}</div>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+            ) : null}
+          </AnimatePresence>,
+          document.body,
+        )
+      : null;
 
   return (
     <>
@@ -156,7 +266,7 @@ export function MediaTopBar({
             size='icon'
             className={glass}
             aria-label='Share'
-            onClick={() => setOpen(true)}
+            onClick={() => setShareOpen(true)}
           >
             <Share2 className='size-4' />
           </Button>
@@ -164,112 +274,95 @@ export function MediaTopBar({
           <Button
             variant='outline'
             size='icon'
-            className={glass}
+            className={cn(glass, status === "dropped" && "border-destructive/40 text-destructive")}
             aria-label='More options'
-            onClick={comingSoon}
+            onClick={() => setMoreOpen(true)}
           >
             <MoreHorizontal className='size-4' />
           </Button>
         </div>
       </div>
 
-      {typeof document !== "undefined"
-        ? createPortal(
-            <AnimatePresence>
-              {open && (
-                <div className='fixed inset-x-0 bottom-0 top-[57px] z-50'>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className='absolute inset-0 bg-background/60 backdrop-blur-sm'
-                    onClick={() => setOpen(false)}
-                  />
+      {sheet(
+        shareOpen,
+        () => setShareOpen(false),
+        "Share",
+        <>
+          <div className='grid grid-cols-2 gap-2'>
+            <button
+              type='button'
+              onClick={copyLink}
+              className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
+            >
+              <Copy className='size-4' />
+              Copy link
+            </button>
+            <button
+              type='button'
+              onClick={nativeShare}
+              className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
+            >
+              <Share2 className='size-4' />
+              Share…
+            </button>
+          </div>
 
-                  <div className='pointer-events-none absolute inset-0 flex items-center justify-center p-4'>
-                    <motion.div
-                      initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                      className='pointer-events-auto w-full max-w-md'
-                    >
-                      <div className='flex max-h-full flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl'>
-                        <div className='flex items-center justify-between border-b border-border/50 px-4 py-3'>
-                          <div className='min-w-0'>
-                            <p className='text-sm font-semibold tracking-tight'>Share</p>
-                            <p className='truncate text-xs text-muted-foreground'>{shareTitle}</p>
-                          </div>
-                          <Button
-                            variant='ghost'
-                            size='icon-sm'
-                            onClick={() => setOpen(false)}
-                            aria-label='Close'
-                          >
-                            <X className='size-4' />
-                          </Button>
-                        </div>
+          <div>
+            <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
+              Platforms
+            </p>
+            <div className='space-y-0.5'>
+              {linkItem("TMDB", tmdbUrl, <SiThemoviedatabase className='size-4' />)}
+              {imdbUrl ? linkItem("IMDb", imdbUrl, <SiImdb className='size-4' />) : null}
+              {linkItem("Letterboxd", letterboxdUrl, <SiLetterboxd className='size-4' />)}
+              {linkItem("Rotten Tomatoes", rtUrl, <SiRottentomatoes className='size-4' />)}
+              {linkItem("Metacritic", metacriticUrl, <SiMetacritic className='size-4' />)}
+            </div>
+          </div>
 
-                        <div className='min-h-0 space-y-4 overflow-y-auto p-3'>
-                          <div className='grid grid-cols-2 gap-2'>
-                            <button
-                              type='button'
-                              onClick={copyLink}
-                              className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
-                            >
-                              <Copy className='size-4' />
-                              Copy link
-                            </button>
-                            <button
-                              type='button'
-                              onClick={nativeShare}
-                              className='flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60'
-                            >
-                              <Share2 className='size-4' />
-                              Share…
-                            </button>
-                          </div>
+          {hasSocial ? (
+            <div>
+              <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
+                Social
+              </p>
+              <div className='space-y-0.5'>
+                {facebookUrl
+                  ? linkItem("Facebook", facebookUrl, <SiFacebook className='size-4' />)
+                  : null}
+                {instagramUrl
+                  ? linkItem("Instagram", instagramUrl, <SiInstagram className='size-4' />)
+                  : null}
+                {twitterUrl ? linkItem("X", twitterUrl, <SiX className='size-4' />) : null}
+              </div>
+            </div>
+          ) : null}
+        </>,
+      )}
 
-                          <div>
-                            <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
-                              Platforms
-                            </p>
-                            <div className='space-y-0.5'>
-                              {linkItem("TMDB", tmdbUrl, <SiThemoviedatabase className='size-4' />)}
-                              {imdbUrl ? linkItem("IMDb", imdbUrl, <SiImdb className='size-4' />) : null}
-                              {linkItem("Letterboxd", letterboxdUrl, <SiLetterboxd className='size-4' />)}
-                              {linkItem("Rotten Tomatoes", rtUrl, <SiRottentomatoes className='size-4' />)}
-                              {linkItem("Metacritic", metacriticUrl, <SiMetacritic className='size-4' />)}
-                            </div>
-                          </div>
-
-                          {hasSocial ? (
-                            <div>
-                              <p className='mb-1.5 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground'>
-                                Social
-                              </p>
-                              <div className='space-y-0.5'>
-                                {facebookUrl
-                                  ? linkItem("Facebook", facebookUrl, <SiFacebook className='size-4' />)
-                                  : null}
-                                {instagramUrl
-                                  ? linkItem("Instagram", instagramUrl, <SiInstagram className='size-4' />)
-                                  : null}
-                                {twitterUrl ? linkItem("X", twitterUrl, <SiX className='size-4' />) : null}
-                              </div>
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-                    </motion.div>
-                  </div>
-                </div>
-              )}
-            </AnimatePresence>,
-            document.body,
-          )
-        : null}
+      {sheet(
+        moreOpen,
+        () => setMoreOpen(false),
+        "More",
+        <div className='space-y-1'>
+          <button
+            type='button'
+            disabled={isPending}
+            onClick={drop}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
+              status === "dropped"
+                ? "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/15"
+                : "border-border/60 bg-muted/30 text-destructive hover:bg-destructive/10",
+            )}
+          >
+            {isPending ? <Loader2 className='size-4 animate-spin' /> : <Ban className='size-4' />}
+            {status === "dropped" ? "Undo drop" : "Drop"}
+          </button>
+          <p className='px-1 pt-1 text-[11px] text-muted-foreground'>
+            Drop hides this title from your active lists. You can undo anytime.
+          </p>
+        </div>,
+      )}
     </>
   );
 }

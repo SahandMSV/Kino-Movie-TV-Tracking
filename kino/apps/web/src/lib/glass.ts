@@ -10,7 +10,7 @@
  */
 export const glass =
   "dark border-white/10 bg-black/45 text-foreground backdrop-blur-xl backdrop-saturate-80 dark:border-white/10 dark:bg-black/40";
-  
+
 /** Same material, with a hover state for buttons and other interactive elements. */
 
 export const glassInteractive = `${glass} hover:bg-black/60 dark:hover:bg-black/60 aria-expanded:bg-black/60`;

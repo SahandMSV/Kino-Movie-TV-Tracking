@@ -312,4 +312,3 @@ export async function getExternalRatings(input: RatingInput): Promise<RatingBox[
     return buildRatingBoxes([], input, "Unavailable");
   }
 }
-

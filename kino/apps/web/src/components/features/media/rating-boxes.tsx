@@ -86,5 +86,4 @@ export function RatingBoxes({ ratings, className }: RatingBoxesProps) {
       })}
     </div>
   );
-
 }

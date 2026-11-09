@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useTranslate } from "@tolgee/react";
 import { posterUrl } from "@/lib/tmdb/config";
-import { formatYear, formatVote } from "@/lib/tmdb/format";
+import { formatYear } from "@/lib/tmdb/format";
 import { MediaImage } from "@/components/common/media-image";
 import type { CollectionPart } from "@/lib/tmdb/details";
 
@@ -33,48 +33,46 @@ export function CollectionPartsGrid({ parts }: CollectionPartsGridProps) {
   }
 
   return (
-    <div className='mx-auto grid max-w-6xl grid-cols-2 gap-4 px-4 py-10 sm:grid-cols-3 sm:px-6 md:grid-cols-4 lg:grid-cols-6'>
-      {ordered.map((part, i) => {
-        const img = posterUrl(part.poster_path, "w185");
-        const year = formatYear(part.release_date);
-        const vote =
-          part.vote_average && part.vote_average > 0 ? formatVote(part.vote_average) : null;
+    <section className='mx-auto max-w-6xl px-4 py-10 sm:px-6'>
+      <h2 className='mb-6 text-xl font-semibold tracking-tight'>{t("collection.label")}</h2>
 
-        return (
-          <motion.div
-            key={part.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.3,
-              delay: i * 0.02,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            <Link
-              href={`/movie/${part.id}`}
-              className='group flex flex-col gap-2 transition-opacity hover:opacity-90'
+      <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'>
+        {ordered.map((part, i) => {
+          const img = posterUrl(part.poster_path, "w185");
+          const year = formatYear(part.release_date);
+
+          return (
+            <motion.div
+              key={part.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.3,
+                delay: i * 0.02,
+                ease: [0.22, 1, 0.36, 1],
+              }}
             >
-              <div className='relative aspect-2/3 overflow-hidden rounded-lg border border-border/50 bg-muted'>
-                <MediaImage
-                  src={img}
-                  alt={part.title}
-                  variant='poster'
-                  imgClassName='transition-transform duration-300 group-hover:scale-105'
-                />
-              </div>
-              <div className='min-w-0 space-y-0.5'>
-                <p className='truncate text-sm font-medium'>{part.title}</p>
-                <p className='truncate text-xs text-muted-foreground'>
-                  {year}
-                  {year && vote ? " · " : null}
-                  {vote}
-                </p>
-              </div>
-            </Link>
-          </motion.div>
-        );
-      })}
-    </div>
+              <Link
+                href={`/movie/${part.id}`}
+                className='group flex flex-col gap-2 transition-opacity hover:opacity-90'
+              >
+                <div className='relative aspect-2/3 overflow-hidden rounded-xl border border-border/50 bg-muted shadow-sm'>
+                  <MediaImage
+                    src={img}
+                    alt={part.title}
+                    variant='poster'
+                    imgClassName='transition-transform duration-300 group-hover:scale-105'
+                  />
+                </div>
+                <div className='min-w-0 space-y-0.5'>
+                  <p className='truncate text-sm font-medium'>{part.title}</p>
+                  {year ? <p className='truncate text-xs text-muted-foreground'>{year}</p> : null}
+                </div>
+              </Link>
+            </motion.div>
+          );
+        })}
+      </div>
+    </section>
   );
 }

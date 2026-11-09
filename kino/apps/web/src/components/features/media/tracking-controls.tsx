@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Bookmark, Check, Eye, Loader2, Pause, X, Ban } from "lucide-react";
+import { Bookmark, Check, Loader2, X, Ban } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { setWatchStatus, removeWatchEntry } from "@/lib/actions/tracking";
@@ -14,6 +14,7 @@ type TrackingControlsProps = {
   title: string;
   posterPath?: string | null;
   initialStatus?: WatchStatus | null;
+  className?: string;
 };
 
 const ACTIONS: {
@@ -21,11 +22,9 @@ const ACTIONS: {
   label: string;
   icon: typeof Bookmark;
 }[] = [
-  { status: "plan_to_watch", label: "Watchlist", icon: Bookmark },
-  { status: "watching", label: "Watching", icon: Eye },
+  { status: "plan_to_watch", label: "Save", icon: Bookmark },
   { status: "watched", label: "Watched", icon: Check },
-  { status: "on_hold", label: "On hold", icon: Pause },
-  { status: "dropped", label: "Dropped", icon: Ban },
+  { status: "dropped", label: "Drop", icon: Ban },
 ];
 
 export function TrackingControls({
@@ -34,6 +33,7 @@ export function TrackingControls({
   title,
   posterPath,
   initialStatus = null,
+  className,
 }: TrackingControlsProps) {
   const [status, setStatus] = useState<WatchStatus | null>(initialStatus);
   const [isPending, startTransition] = useTransition();
@@ -56,11 +56,9 @@ export function TrackingControls({
       setStatus(res.status ?? next);
 
       const messages: Record<WatchStatus, string> = {
-        plan_to_watch: "Added to watchlist",
-        watching: "Marked as watching",
+        plan_to_watch: "Saved",
         watched: "Marked as watched",
-        on_hold: "Put on hold",
-        dropped: "Marked as dropped",
+        dropped: "Dropped",
       };
       toast.success(messages[next]);
     });
@@ -79,7 +77,7 @@ export function TrackingControls({
   };
 
   return (
-    <div className='mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-2 px-4 pb-6 sm:px-6 lg:justify-start'>
+    <div className={cn("flex flex-wrap items-center gap-2", className)}>
       {ACTIONS.map(({ status: s, label, icon: Icon }) => {
         const active = status === s;
         return (

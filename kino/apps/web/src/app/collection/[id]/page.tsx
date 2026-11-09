@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { AppNavbar } from "@/components/features/home/home-nav";
 import { CollectionHero } from "@/components/features/media/collection-hero";
 import { CollectionPartsGrid } from "@/components/features/media/collection-parts-grid";
-import { getCollection } from "@/lib/tmdb/details";
+import { getCollection, getMediaImages } from "@/lib/tmdb/details";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -34,25 +34,35 @@ export default async function CollectionPage({ params }: Props) {
     notFound();
   }
 
-  const session = await auth();
+  const [session, collectionResult, images] = await Promise.all([
+    auth(),
+    getCollection(numericId).catch(() => null),
+    getMediaImages(numericId, "collection").catch(() => []),
+  ]);
 
-  let collection;
-  try {
-    collection = await getCollection(numericId);
-  } catch {
-    notFound();
-  }
+  if (!collectionResult) notFound();
+  const collection = collectionResult;
+
+  // Collection API has no popularity; use the strongest part signal if present
+  const popularity = collection.parts.reduce<number | null>((max, part) => {
+    const p = part.popularity;
+    if (p == null || !(p > 0)) return max;
+    return max == null ? p : Math.max(max, p);
+  }, null);
 
   return (
     <div className='flex min-h-screen flex-col'>
       <AppNavbar user={session?.user ?? null} />
       <main className='flex-1 pb-16'>
         <CollectionHero
+          collectionId={collection.id}
           name={collection.name}
           overview={collection.overview}
           posterPath={collection.poster_path}
           backdropPath={collection.backdrop_path}
           partCount={collection.parts.length}
+          popularity={popularity}
+          images={images}
         />
         <CollectionPartsGrid parts={collection.parts} />
       </main>

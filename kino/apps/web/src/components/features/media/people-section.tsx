@@ -88,4 +88,3 @@ export function PeopleSection({ title, people, total }: PeopleSectionProps) {
     </section>
   );
 }
-

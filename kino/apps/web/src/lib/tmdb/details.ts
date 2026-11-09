@@ -112,6 +112,7 @@ const movieDetailSchema = z.object({
   external_ids: externalIdsSchema.optional(),
   release_dates: releaseDatesSchema.optional(),
   translations: translationsSchema.optional(),
+  popularity: z.number().optional(),
 });
 
 const tvSeasonSummarySchema = z.object({
@@ -125,10 +126,17 @@ const tvSeasonSummarySchema = z.object({
   vote_average: z.number().optional(),
 });
 
+const createdBySchema = z.object({
+  id: z.number().optional(),
+  name: z.string(),
+  profile_path: z.string().nullable().optional(),
+});
+
 const tvDetailSchema = z.object({
   id: z.number(),
   name: z.string(),
   original_name: z.string().optional(),
+  created_by: z.array(createdBySchema).default([]),
   overview: z.string().nullable(),
   poster_path: z.string().nullable(),
   backdrop_path: z.string().nullable(),
@@ -148,6 +156,7 @@ const tvDetailSchema = z.object({
   external_ids: externalIdsSchema.optional(),
   release_dates: releaseDatesSchema.optional(),
   translations: translationsSchema.optional(),
+  popularity: z.number().optional(),
 });
 
 const personCreditItemSchema = z.object({
@@ -436,4 +445,72 @@ export async function getPosterPath(id: number, mediaType: "movie" | "tv"): Prom
       poster_path: z.string().nullable(),
     })
     .parse(data).poster_path;
+}
+
+const tmdbImageItemSchema = z.object({
+  file_path: z.string(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+  vote_average: z.number().optional(),
+  iso_639_1: z.string().nullable().optional(),
+});
+
+const tmdbImagesResponseSchema = z.object({
+  id: z.number().optional(),
+  backdrops: z.array(tmdbImageItemSchema).default([]),
+  posters: z.array(tmdbImageItemSchema).default([]),
+  logos: z.array(tmdbImageItemSchema).default([]).optional(),
+});
+
+export type GalleryImage = {
+  path: string;
+  kind: "poster" | "backdrop";
+  width?: number;
+  height?: number;
+};
+
+export async function getMediaImages(
+  id: number,
+  mediaType: "movie" | "tv" | "collection",
+): Promise<GalleryImage[]> {
+  const path =
+    mediaType === "collection" ? `/collection/${id}/images` : `/${mediaType}/${id}/images`;
+
+  const data = await tmdbFetch({
+    path,
+    // No include_image_language → all available artwork
+    next: { revalidate: 60 * 60 * 12 },
+  });
+
+  const parsed = tmdbImagesResponseSchema.parse(data);
+
+  const sortByVotes = (
+    a: z.infer<typeof tmdbImageItemSchema>,
+    b: z.infer<typeof tmdbImageItemSchema>,
+  ) => (b.vote_average ?? 0) - (a.vote_average ?? 0);
+
+  const posters = [...parsed.posters].sort(sortByVotes).map(p => ({
+    path: p.file_path,
+    kind: "poster" as const,
+    width: p.width,
+    height: p.height,
+  }));
+
+  const backdrops = [...parsed.backdrops].sort(sortByVotes).map(b => ({
+    path: b.file_path,
+    kind: "backdrop" as const,
+    width: b.width,
+    height: b.height,
+  }));
+
+  const seen = new Set<string>();
+  const out: GalleryImage[] = [];
+
+  for (const item of [...posters, ...backdrops]) {
+    if (seen.has(item.path)) continue;
+    seen.add(item.path);
+    out.push(item);
+  }
+
+  return out;
 }

@@ -13,8 +13,8 @@ export default async function ProgressPage() {
 
   const t = await getTranslate();
 
-  const [watchingRes, watchedRes] = await Promise.all([
-    listWatchEntriesByStatuses(["watching"], { limit: 36 }),
+  const [savedRes, watchedRes] = await Promise.all([
+    listWatchEntriesByStatuses(["plan_to_watch"], { limit: 36 }),
     listWatchEntriesByStatuses(["watched"], { limit: 36 }),
   ]);
 
@@ -30,12 +30,13 @@ export default async function ProgressPage() {
 
         <div className='mx-auto max-w-6xl px-4 pt-8 sm:px-6'>
           <h2 className='text-xl font-semibold tracking-tight'>{t("progress.watching")}</h2>
+          <h2>{t("progress.saved")}</h2>
         </div>
         <div className='pt-4'>
           <VirtualWatchEntryGrid
-            statuses={["watching"]}
-            initialEntries={watchingRes.entries}
-            initialCursor={watchingRes.nextCursor}
+            statuses={["plan_to_watch"]}
+            initialEntries={savedRes.entries}
+            initialCursor={savedRes.nextCursor}
             emptyTitle={t("progress.empty_watching_title")}
             emptyDescription={t("progress.empty_watching_desc")}
           />
@@ -43,6 +44,7 @@ export default async function ProgressPage() {
 
         <div className='mx-auto max-w-6xl px-4 pt-10 sm:px-6'>
           <h2 className='text-xl font-semibold tracking-tight'>{t("progress.watched")}</h2>
+          <h2>{t("progress.watched")}</h2>
         </div>
         <div className='pt-4'>
           <VirtualWatchEntryGrid
